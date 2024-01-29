@@ -18,19 +18,28 @@ export class LoggerService {
     }, this.interval);
   }
 
-  public pushLog(log: Task.Log) {
-    this.buffer.push(log);
-    if (this.buffer.length === this.maxBufferSize) {
-      this.flush();
+  public async pushLog(log: Task.Log) {
+    try {
+        this.buffer.push(log);
+        if (this.buffer.length === this.maxBufferSize) {
+            this.flush();
+        }
+    } catch (e) {
+
     }
+    
   }
 
-  public flush() {
-    console.log('flushing log buffer: ' + this.buffer.length);
-    // writing to log files.
+  public async flush() {
+    try {
+        console.log('flushing log buffer: ' + this.buffer.length);
+        // writing to log files.
 
-    this.buffer = [];
+        this.buffer = [];
+    } catch (e) {
+
+    }
+    
   }
 
-  public simplef() {}
 }

@@ -5,7 +5,7 @@ import { ClsService } from 'nestjs-cls';
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from 'src/util/logger/logger.service';
 import { ManagerService } from 'src/util/manager/manager.service';
-import { TaskManager } from 'src/util/task-manager';
+import { TaskHelper } from 'src/util/task-helper';
 import { delay } from 'src/util/delay';
 import { promises as fs } from 'fs';
 import { genereateRandomNumber as grn } from 'src/util/random';
@@ -129,10 +129,10 @@ export class ServiceAService {
   public async processRT() {
     this.clsService.run(async () => {
       this.clsService.set(
-        'taskManager',
-        new TaskManager(this.managerService, this.loggerService),
+        'TaskHelper',
+        new TaskHelper(this.managerService, this.loggerService),
       );
-      this.clsService.get('taskManager').build().start();
+      this.clsService.get('TaskHelper').build().start();
 
       //console.log(this);
 
@@ -146,7 +146,7 @@ export class ServiceAService {
               try {
                 await this.doSomething(chainInfo);
               } catch (e) {
-                this.clsService.get('taskManager').error(e);
+                this.clsService.get('TaskHelper').error(e);
               }
             }
 
@@ -156,9 +156,9 @@ export class ServiceAService {
         promiseInfo.push(...chunkInfos);
       }
 
-      this.clsService.get('taskManager').log('all finished');
+      this.clsService.get('TaskHelper').log('all finished');
 
-      await this.clsService.get('taskManager').end();
+      await this.clsService.get('TaskHelper').end();
     });
   }
 
@@ -173,9 +173,9 @@ export class ServiceAService {
       await fs.writeFile(tempfilePath, data);
       //console.log(this);
       await delay(grn(1, 4));
-      this.clsService.get('taskManager').log(`[${chainInfo.chainName}] okay`);
+      this.clsService.get('TaskHelper').log(`[${chainInfo.chainName}] okay`);
     } catch (e) {
-      this.clsService.get('taskManager').error(e);
+      this.clsService.get('TaskHelper').error(e);
     }
   }
 

@@ -64,4 +64,10 @@ export namespace Task {
     startAt: number;
     endAt: number;
   }
+
+  export interface TaskIdentifier {
+    domain: string;
+    task: string;
+    taskType: TaskType;
+  }
 }
