@@ -1,0 +1,6 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "eslint-disable-next-line": false,
+  "printWidth": 80
+}
