@@ -1,6 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { Task } from './types/task';
 
+const newTasks: Task.TaskState[] = [
+    {
+        domain: 'ServiceA',
+        task: 'processRun',
+        taskType: Task.TaskType.TRIGGER,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        logs: [],
+    },
+    {
+        domain: 'ServiceA',
+        task: 'processRun',
+        taskType: Task.TaskType.CRON,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        logs: [],
+    }
+]
+
 @Injectable()
 export class ManagerService {
     private taskStates: Task.TaskState[] = [];
@@ -21,19 +48,7 @@ export class ManagerService {
     private intialization() {
         this.taskStates = [];
         // 사전 정의된 task들 넣어주는 작업.
-        const newTask: Task.TaskState = {
-            domain: 'ServiceA',
-            task: 'processRT',
-            taskType: Task.TaskType.CRON,
-            status: Task.TaskStatus.TERMINATED,
-            contextId: null,
-            isAvailable: true,
-            updatedAt: null,
-            startAt: null,
-            endAt: null,
-            logs: [],
-        }
-        this.taskStates.push(newTask);
+        newTasks.forEach(newTask => this.taskStates.push(newTask));
         console.log('manager service initialized');
     }
 

@@ -8,6 +8,6 @@ export class ServiceAController {
 
   @Get()
   public async serviceATrigger() {
-    await this.serviceAService.processRT();
+    await this.serviceAService.processTrigger();
   }
 }

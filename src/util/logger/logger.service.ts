@@ -41,10 +41,10 @@ export class LoggerService {
   public async flush() {
     try {
         console.log('flushing log buffer: ' + this.buffer.length);
-        // writing to log files.
+        // 실제 Log 저장하는 로직을 넣으면 됨.
 
-        console.log(__dirname)
-        const filepath = path.join(__dirname, tempfilename);
+        // console.log(__dirname)
+        // const filepath = path.join(__dirname, tempfilename);
 
         const data = this.buffer.map(log => JSON.stringify(log)).join('\n')
 
