@@ -13,7 +13,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        logs: [],
+        recentLogs: [],
     },
     {
         domain: 'ServiceA',
@@ -25,13 +25,16 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        logs: [],
+        recentLogs: []
     }
 ]
+
+const maxLogsNumber = 3;
 
 @Injectable()
 export class ManagerService {
     private taskStates: Task.TaskStatewithLogs[] = [];
+    private maxRecentLogs;
     // Q1. taskState의 각 Logs는 최신 3개 정도만 반영해야함.
     // 
 
@@ -50,12 +53,22 @@ export class ManagerService {
     // 사전 정의된 task들 넣어주는 작업. >> initialization.
     private intialization() {
         this.taskStates = [];
+        this.maxRecentLogs = maxLogsNumber
         newTasks.forEach(newTask => this.taskStates.push(newTask));
         console.log('manager service initialized');
     }
 
+    // for test
     public getTaskStates() {
-        return this.taskStates;
+        return this.taskStates.map(taskState => {
+            const { recentLogs, ...remain } = taskState;
+            const recentLogsLength = recentLogs.length;
+            return {
+                ...remain,
+                recentLogsLength,
+                recentLogs,
+            }
+        })
     }
 
     // initial 당시 해당 task가 활성화 되어있는지 확인
@@ -86,7 +99,7 @@ export class ManagerService {
             existingTask.startAt = Date.now();
             existingTask.updatedAt = Date.now();
             existingTask.endAt = null;
-            const { logs, ...remains } = existingTask;
+            const { recentLogs, ...remains } = existingTask;
             return {
                 taskState: remains,
                 taskIndex: taskIdx,
@@ -98,23 +111,42 @@ export class ManagerService {
     // Task 종료, contextId로 taskIdx 찾아서 상태 update.
     // Log는 별도로 찍힘.
     public async endTask(taskIndex: number): Promise<Task.TaskState> {
-        // Index 유효성 검사?
+        // TODO?: Index 유효성 검사?
         const existingTask = this.taskStates[taskIndex];
         existingTask.status = Task.TaskStatus.TERMINATED;
         existingTask.updatedAt = Date.now();
         existingTask.endAt = Date.now();
-        const { logs, ...remain } = existingTask;
+        const { recentLogs, ...remain } = existingTask;
         return remain;
     }
     
     // 들어오는 Log, 해당 taskIndex logs에 push.
     public async logTask(taskIndex: number, log: Task.Log) {
-        // Index 유효성 검사?
-        if(log.logTiming !== Task.Timing.START, log.logTiming !== Task.Timing.END){
-            // 시작과 끝이 아닌 경우,
-            this.taskStates[taskIndex].updatedAt = log.timestamp;
+        // TODO?: Index 유효성 검사?
+        const taskState = this.taskStates[taskIndex];
+
+        //최근 Log 3개만 유지
+        // 로그 시작시 새 로그 배열 추가
+        if (log.logTiming === Task.Timing.START) {
+            // recentLogs 배열 길이 확인 및 오래된 로그 제거
+            if (taskState.recentLogs.length >= this.maxRecentLogs) {
+                taskState.recentLogs.shift();
+            }
+            // 새 로그 배열 추가
+            taskState.recentLogs.push([]);
         }
-        this.taskStates[taskIndex].logs.push(log);
+
+        // 로그 추가 (가장 최근 로그 배열에 로그 추가)
+        const currentLogArray = taskState.recentLogs[taskState.recentLogs.length - 1];
+        currentLogArray.push(log);
+
+        //taskState 업데이트
+        if(log.logTiming !== Task.Timing.START && log.logTiming !== Task.Timing.END){
+            // 시작과 끝이 아닌 경우,
+            taskState.updatedAt = log.timestamp;
+        }
+        const logIdx = this.taskStates[taskIndex].recentLogs.length - 1
+        this.taskStates[taskIndex].recentLogs[logIdx].push(log);
 
         // gateway 전송
     }

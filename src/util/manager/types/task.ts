@@ -19,7 +19,7 @@ export namespace Task {
 
   export const enum TaskStatus {
     TERMINATED = 'terminated',
-    PROGRESS = 'progess',
+    PROGRESS = 'progress',
     WAITING = 'waiting',
   }
 
@@ -81,6 +81,6 @@ export namespace Task {
 
   // Task 실행시, log에 관한 Context
   export interface ITaskLogContext {
-    logs: Log[];
+    recentLogs: Log[][];
   }
 }
