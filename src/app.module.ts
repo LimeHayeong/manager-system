@@ -9,15 +9,7 @@ import { ServiceDModule } from './domains/service-d/service-d.module';
 import { WsModule } from './util/ws/ws.module';
 
 @Module({
-  imports: [
-    ServiceAModule,
-    ServiceBModule,
-    ServiceCModule,
-    ServiceDModule,
-    WsModule,
-    ManagerModule,
-    LoggerModule,
-  ],
+  imports: [ServiceAModule, ServiceBModule, ServiceCModule, ServiceDModule, WsModule, ManagerModule, LoggerModule],
   controllers: [],
   providers: [AppService],
 })

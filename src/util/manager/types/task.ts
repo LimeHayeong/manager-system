@@ -35,17 +35,14 @@ export namespace Task {
   }
 
   export interface TaskState extends Task {
-    domain: string;
-    task: string;
     taskType: TaskType;
-    status: TaskStatus;
-    currentContextId: string;
     isAvailable: boolean;
     updatedAt: number;
     startAt: number;
     endAt: number;
-    logs: Log[];
   }
+
+  export interface TaskStateNoLogs extends Omit<TaskState, 'logs'> {}
 
   export interface Task {
     domain: string;

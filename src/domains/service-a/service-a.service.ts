@@ -5,6 +5,7 @@ import { ClsService } from 'nestjs-cls';
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from 'src/util/logger/logger.service';
 import { ManagerService } from 'src/util/manager/manager.service';
+import { Task } from 'src/util/manager/types/task';
 import { TaskHelper } from 'src/util/task-helper';
 import { delay } from 'src/util/delay';
 import { promises as fs } from 'fs';
@@ -132,7 +133,8 @@ export class ServiceAService {
         'TaskHelper',
         new TaskHelper(this.managerService, this.loggerService),
       );
-      this.clsService.get('TaskHelper').build().start();
+      this.clsService.get('TaskHelper').build('ServiceA', 'processRT', Task.TaskType.CRON);
+      await this.clsService.get('TaskHelper').start();
 
       //console.log(this);
 
@@ -164,8 +166,9 @@ export class ServiceAService {
 
   private async doSomething(chainInfo: any) {
     try {
-      if (chainInfo.price == null)
-        throw new Error(`no data for ${chainInfo.chainName}`);
+      if (chainInfo.price == null){
+        throw new Error(`[${chainInfo.chainName}] no data`);
+      }
 
       const tempfilePath = path.join(__dirname, tempfilename);
       const data = JSON.stringify(chainInfo);
@@ -180,7 +183,7 @@ export class ServiceAService {
   }
 
   private async doSomething2(chain: string) {
-    const rn = Math.random();
+    // const rn = Math.random();
     await delay(grn(1, 4));
     if (Math.random() < 1 / 10) {
       // console.log(rn)

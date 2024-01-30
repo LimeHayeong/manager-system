@@ -1,5 +1,12 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { Injectable } from '@nestjs/common';
-import { Task } from '../types/task';
+import { Task } from '../manager/types/task';
+
+const tempBufferSize = 500;
+const tempInterval = 5000;
+const tempfilename = 'log.json'
 
 @Injectable()
 export class LoggerService {
@@ -8,9 +15,10 @@ export class LoggerService {
   private interval: number;
 
   constructor() {
-    this.maxBufferSize = 500;
-    this.interval = 5000;
+    this.maxBufferSize = tempBufferSize;
+    this.interval = tempInterval;
 
+    // interval마다 flush
     setInterval(() => {
       if (this.buffer.length > 0) {
         this.flush();
@@ -21,13 +29,13 @@ export class LoggerService {
   public async pushLog(log: Task.Log) {
     try {
         this.buffer.push(log);
+        // buffer가 꽉 찼으면 flush
         if (this.buffer.length === this.maxBufferSize) {
             this.flush();
         }
     } catch (e) {
 
     }
-    
   }
 
   public async flush() {
@@ -35,11 +43,16 @@ export class LoggerService {
         console.log('flushing log buffer: ' + this.buffer.length);
         // writing to log files.
 
+        console.log(__dirname)
+        const filepath = path.join(__dirname, tempfilename);
+
+        const data = this.buffer.map(log => JSON.stringify(log)).join('\n')
+
+        fs.appendFileSync(tempfilename, data + '\n');
+
         this.buffer = [];
     } catch (e) {
-
-    }
-    
+        console.error('Error during flushing logs: ', e)
+    } 
   }
-
 }
