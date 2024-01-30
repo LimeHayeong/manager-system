@@ -4,7 +4,7 @@ import { Task } from './manager/types/task';
 import { v4 as uuid } from 'uuid';
 
 export class TaskHelper {
-  private taskState: Task.TaskStateNoLogs;
+  private taskState: Task.TaskState;
   private taskIndex: number;
 
   constructor(
@@ -25,6 +25,7 @@ export class TaskHelper {
   }
   // 이럴 거면 모듈로 정의하는게 ..?
 
+  // Q1. build level과 isAvailable이 Logical하게 함께가 맞을까?
   public build(domain: string, task: string, taskType: Task.TaskType, contextId?: string) {
     if(!contextId){
       contextId = uuid();

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Task } from './types/task';
 
 // Q. 같은 domain, task인데 다른 실행방법을 가지면 다르게 Log를 저장해야하나?? >> 생각해봐야함.
-const newTasks: Task.TaskState[] = [
+const newTasks: Task.TaskStatewithLogs[] = [
     {
         domain: 'ServiceA',
         task: 'processRun',
@@ -31,7 +31,7 @@ const newTasks: Task.TaskState[] = [
 
 @Injectable()
 export class ManagerService {
-    private taskStates: Task.TaskState[] = [];
+    private taskStates: Task.TaskStatewithLogs[] = [];
     // Q1. taskState의 각 Logs는 최신 3개 정도만 반영해야함.
     // 
 
@@ -39,6 +39,7 @@ export class ManagerService {
     // A. index로 바꿨음.
     // >> 두 번째 문제 배열의 순서가 바뀌면 문제가 생김
     // >> 작업이 정의되어 있으니까 initialization 과정이 필요할 듯. (작업을 중도 퇴출 시키지 않는 한)
+    // TODO.
 
     constructor() {
         // taskStates initialization
@@ -46,9 +47,9 @@ export class ManagerService {
         this.intialization();
     }
 
+    // 사전 정의된 task들 넣어주는 작업. >> initialization.
     private intialization() {
         this.taskStates = [];
-        // 사전 정의된 task들 넣어주는 작업.
         newTasks.forEach(newTask => this.taskStates.push(newTask));
         console.log('manager service initialized');
     }
@@ -59,7 +60,7 @@ export class ManagerService {
 
     // initial 당시 해당 task가 활성화 되어있는지 확인
     // return: true(available), false
-    public isTaskAvailable(taskIdentifier: Task.TaskIdentifier): boolean {
+    public isTaskAvailable(taskIdentifier: Task.ITaskIdentity): boolean {
         console.log(taskIdentifier)
         const taskIndex = this.findTask(taskIdentifier)
         if(taskIndex !== -1){
@@ -72,20 +73,22 @@ export class ManagerService {
 
     // Task 시작, task identifier로 해당 taskIdx 찾아서 상태 update.
     // Log는 별도로 찍힘.
-    public async startTask(taskId: Task.TaskIdentifier, contextId: string): Promise<{
-        taskState: Task.TaskStateNoLogs,
+    public async startTask(taskId: Task.ITaskIdentity, contextId: string): Promise<{
+        taskState: Task.TaskState,
         taskIndex: number
     }> {
         const taskIdx = this.findTask(taskId);
         if(taskIdx !== -1){
+            // 실행 context에 관한 건 intialization시 초기화 됨.
             const existingTask = this.taskStates[taskIdx];
             existingTask.status = Task.TaskStatus.PROGRESS;
             existingTask.contextId = contextId;
             existingTask.startAt = Date.now();
             existingTask.updatedAt = Date.now();
             existingTask.endAt = null;
+            const { logs, ...remains } = existingTask;
             return {
-                taskState: existingTask,
+                taskState: remains,
                 taskIndex: taskIdx,
             }
         }
@@ -94,7 +97,7 @@ export class ManagerService {
 
     // Task 종료, contextId로 taskIdx 찾아서 상태 update.
     // Log는 별도로 찍힘.
-    public async endTask(taskIndex: number): Promise<Task.TaskStateNoLogs> {
+    public async endTask(taskIndex: number): Promise<Task.TaskState> {
         // Index 유효성 검사?
         const existingTask = this.taskStates[taskIndex];
         existingTask.status = Task.TaskStatus.TERMINATED;
@@ -122,7 +125,7 @@ export class ManagerService {
 
     // initial 당시 (domain, task, taskType) 쌍으로 task 찾아주는 helper function
     // return: index
-    private findTask(taskId: Task.TaskIdentifier): number {
+    private findTask(taskId: Task.ITaskIdentity): number {
         const idx = this.taskStates.findIndex(taskState =>
             taskState.domain === taskId.domain
             && taskState.task === taskId.task

@@ -35,6 +35,7 @@ export class ServiceAService {
       taskType: Task.TaskType.TRIGGER,
     }
     this.clsService.run(async() => {
+      // TODO: build시의 유효성을 한 번에 몰아서 처리하는 게 좋을 듯.
       try {
         this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.loggerService))
         this.taskHelper().build(opts.domain, opts.task, opts.taskType);
