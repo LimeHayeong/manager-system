@@ -12,7 +12,6 @@ export class TaskHelper {
   constructor(
     private readonly managerService: ManagerService,
     private readonly fileLoggerService: FileLoggerService,
-    private readonly wsGateway: WsGateway,
   ) {
     this.taskState = {
       domain: '',

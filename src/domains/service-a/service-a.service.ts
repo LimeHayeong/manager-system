@@ -19,7 +19,6 @@ const tempfilename = 'abc.txt';
 @Injectable()
 export class ServiceAService {
   constructor(
-    private readonly wsGateway: WsGateway,
     private readonly clsService: ClsService,
     private readonly managerService: ManagerService,
     private readonly fileLoggerService: FileLoggerService,
@@ -37,7 +36,7 @@ export class ServiceAService {
     this.clsService.run(async() => {
       // TODO: build시의 유효성을 한 번에 몰아서 처리하는 게 좋을 듯.
       try {
-        this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService, this.wsGateway))
+        this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
         this.taskHelper().build(opts.domain, opts.task, opts.taskType);
         await this.processRun();
       } catch (e) {
@@ -56,7 +55,7 @@ export class ServiceAService {
     }
     this.clsService.run(async() => {
       try {
-        this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService, this.wsGateway))
+        this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
         this.taskHelper().build(opts.domain, opts.task, opts.taskType);
         await this.processRun();
       } catch (e) {

@@ -1,5 +1,4 @@
-import { ManagerModule } from '../manager/manager.module';
-import { ManagerService } from '../manager/manager.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Module } from '@nestjs/common';
 import { WsGateway } from './ws.gateway';
 import { WsService } from './ws.service';

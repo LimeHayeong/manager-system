@@ -1,3 +1,5 @@
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+
 import { Injectable } from '@nestjs/common';
 import { Task } from '../types/task';
 
@@ -43,6 +45,7 @@ export class ManagerService {
     // TODO.
 
     constructor(
+        private eventEmitter: EventEmitter2,
     ) {
         // taskStates initialization
         // >> task 미리 알고 있으면 해당 task들 기본 작업.
@@ -71,10 +74,10 @@ export class ManagerService {
     // initial 당시 해당 task가 활성화 되어있는지 확인
     // return: true(available), false
     public isTaskAvailable(taskIdentifier: Task.ITaskIdentity): boolean {
-        console.log(taskIdentifier)
+        // console.log(taskIdentifier)
         const taskIndex = this.findTask(taskIdentifier)
         if(taskIndex !== -1){
-            console.log(taskIdentifier.domain + ':' + taskIdentifier.task + ' is available')
+            // console.log(taskIdentifier.domain + ':' + taskIdentifier.task + ' is available')
             return this.taskStates[taskIndex].isAvailable
         }
         console.log(taskIdentifier.domain + ':' + taskIdentifier.task + ' is not available')
@@ -97,7 +100,12 @@ export class ManagerService {
             existingTask.updatedAt = Date.now();
             existingTask.endAt = null;
             const { recentLogs, ...remains } = existingTask;
-
+            // wsGateway에 전달
+            const eventData = this.taskStatesNoLogs();
+            this.eventEmitter.emit(
+                'taskStateUpdate',
+                eventData,
+            )
             return {
                 taskState: remains,
                 taskIndex: taskIdx,
@@ -115,7 +123,12 @@ export class ManagerService {
         existingTask.updatedAt = Date.now();
         existingTask.endAt = Date.now();
         const { recentLogs, ...remain } = existingTask;
-
+        // wsGateway에 전달
+        const eventData = this.taskStatesNoLogs();
+        this.eventEmitter.emit(
+            'taskStateUpdate',
+            eventData,
+        )
         return remain;
     }
     
@@ -146,6 +159,13 @@ export class ManagerService {
         }
         const logIdx = this.taskStates[taskIndex].recentLogs.length - 1
         this.taskStates[taskIndex].recentLogs[logIdx].push(log);
+
+        // wsGateway
+        const eventData = this.taskStates;
+        this.eventEmitter.emit(
+            'taskLog',
+            eventData,
+        )
     }
 
     public updateTask() {
@@ -160,8 +180,8 @@ export class ManagerService {
             && taskState.task === taskId.task
             && taskState.taskType === taskId.taskType)
         if(idx !== -1) {
-            console.log(idx)
-            console.log('task found: ' + taskId.domain + ':' + taskId.task + ':' + taskId.taskType)
+            // console.log(idx)
+            // console.log('task found: ' + taskId.domain + ':' + taskId.task + ':' + taskId.taskType)
             return idx
         }else{
             return undefined
@@ -203,5 +223,14 @@ export class ManagerService {
                 recentLogs,
             }
         })
+    }
+
+    @OnEvent('getIntialTaskStates')
+    handleGetInitialTaskStates() {
+        const data = this.taskStatesNoLogs();
+        this.eventEmitter.emit(
+            'initailTaskStatesResponse',
+            data
+        )
     }
 }

@@ -4,10 +4,9 @@ import { ManagerModule } from 'src/util/manager/manager.module';
 import { Module } from '@nestjs/common';
 import { ServiceAController } from './service-a.controller';
 import { ServiceAService } from './service-a.service';
-import { WsModule } from 'src/util/ws/ws.module';
 
 @Module({
-  imports: [ClsModule, FileLoggerModule, ManagerModule, WsModule],
+  imports: [ClsModule, FileLoggerModule, ManagerModule],
   providers: [ServiceAService],
   controllers: [ServiceAController],
 })

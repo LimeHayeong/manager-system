@@ -1,15 +1,15 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable } from '@nestjs/common';
-import { ManagerService } from '../manager/manager.service';
 
 @Injectable()
 export class WsService {
     constructor(
-        private readonly managerService: ManagerService,
+        private eventEmitter: EventEmitter2,
     ) {
         
     }
 
     public getInitial() {
-        
+        return this.eventEmitter.emit('getInitialTaskStates');
     }
 }

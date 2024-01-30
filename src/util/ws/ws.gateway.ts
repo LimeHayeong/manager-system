@@ -1,3 +1,4 @@
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
 
@@ -11,6 +12,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   constructor(
     private readonly wsService: WsService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   afterInit(server: Server) {
@@ -20,13 +22,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
   async handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
     try {
-      const initialState = this.wsService.getInitial();
-      const response: WebSocketResponse = {
-        success: true,
-        statusCode: 200,
-        payload: initialState,
-      }
-      client.emit('connectResponse', response);
+      this.wsService.getInitial();
     } catch (e) {
       console.error(e);
       client.disconnect();
@@ -43,8 +39,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   }
 
-  public async sendTaskStateUpdate(data: any) {
-    console.log('broadcast taskStateUpdate')
+  @OnEvent('taskStateUpdate')
+  handleTaskStateUpdate(data: any){
     const response: WebSocketResponse = {
       success: true,
       statusCode: 200,
@@ -53,15 +49,23 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.emit('taskStateUpdate', response);
   }
 
-
-
-  public async sendTaskLog(data: any) {
-    console.log('broadcast taskLog')
+  @OnEvent('taskLog')
+  handleTaskLog(data: any){
     const response: WebSocketResponse = {
       success: true,
       statusCode: 200,
       payload: data,
     }
     this.server.emit('taskLog', response);
+  }
+
+  @OnEvent('getIntialTaskStatesResponse')
+  handleIntialState(data: any){
+    const response: WebSocketResponse = {
+      success: true,
+      statusCode: 200,
+      payload: data,
+    }
+    this.server.emit('connectResponse', response);
   }
 }
