@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Task } from './types/task';
 
+// Q. 같은 domain, task인데 다른 실행방법을 가지면 다르게 Log를 저장해야하나?? >> 생각해봐야함.
 const newTasks: Task.TaskState[] = [
     {
         domain: 'ServiceA',
@@ -82,6 +83,7 @@ export class ManagerService {
             existingTask.contextId = contextId;
             existingTask.startAt = Date.now();
             existingTask.updatedAt = Date.now();
+            existingTask.endAt = null;
             return {
                 taskState: existingTask,
                 taskIndex: taskIdx,
@@ -95,17 +97,11 @@ export class ManagerService {
     public async endTask(taskIndex: number): Promise<Task.TaskStateNoLogs> {
         // Index 유효성 검사?
         const existingTask = this.taskStates[taskIndex];
-        return {
-            domain: existingTask.domain,
-            task: existingTask.task,
-            taskType: existingTask.taskType,
-            status: Task.TaskStatus.TERMINATED,
-            contextId: existingTask.contextId,
-            isAvailable: existingTask.isAvailable,
-            updatedAt: Date.now(),
-            startAt: existingTask.startAt,
-            endAt: Date.now()
-        }
+        existingTask.status = Task.TaskStatus.TERMINATED;
+        existingTask.updatedAt = Date.now();
+        existingTask.endAt = Date.now();
+        const { logs, ...remain } = existingTask;
+        return remain;
     }
     
     // 들어오는 Log, 해당 taskIndex logs에 push.

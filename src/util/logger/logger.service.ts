@@ -55,4 +55,9 @@ export class LoggerService {
         console.error('Error during flushing logs: ', e)
     } 
   }
+
+  // for test
+  public getBuffer() {
+    return this.buffer;
+  }
 }

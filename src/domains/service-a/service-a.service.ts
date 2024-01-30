@@ -11,7 +11,6 @@ import { TaskHelper } from 'src/util/task-helper';
 import { delay } from 'src/util/delay';
 import { promises as fs } from 'fs';
 import { genereateRandomNumber as grn } from 'src/util/random';
-import { v4 as uuid } from 'uuid';
 
 const chains = ['Chain_10', 'Chain_52', 'Chain_2', 'Chain_48', 'Tezos', 'Monero', 'Chain_12', 'Tron', 'BinanceCoin', 'Chain_35', 'Chain_57', 'Chain_29', 'Chain_15', 'Chain_69', 'Chain_27', 'Chain_26', 'Litecoin', 'NEO', 'Chain_7', 'Chain_41', 'Aave', 'Chain_11', 'NEM', 'Chain_60', 'Chain_33', 'Chain_46', 'Chain_20', 'Chain_37', 'Chain_62', 'Solana', 'Chain_22', 'Chainlink', 'Chain_66', 'Chain_54', 'Chain_73', 'Chain_42', 'Chain_61', 'Chain_17', 'Cosmos', 'Uniswap', 'Stellar', 'Chain_50', 'Chain_16', 'Chain_3', 'Chain_31', 'Chain_64', 'Ripple', 'Chain_74', 'Chain_32', 'VeChain', 'Chain_44', 'Chain_25', 'Chain_40', 'Chain_56', 'Zcash', 'Chain_72', 'Chain_13', 'IOTA', 'Chain_71', 'Chain_24', 'Chain_8', 'Chain_65', 'Chain_76', 'Chain_59', 'Dash', 'Chain_58', 'Chain_39', 'Chain_55', 'Bitcoin', 'Chain_5', 'Chain_1', 'Chain_28', 'Ethereum', 'Dogecoin', 'Chain_63', 'Chain_36', 'Polkadot', 'Chain_19', 'Chain_47', 'Chain_23', 'Chain_6', 'Chain_43', 'Chain_0', 'Chain_30', 'Chain_67', 'Chain_70', 'Chain_9', 'Chain_14', 'Chain_68', 'Chain_75', 'Chain_21', 'Chain_38', 'Chain_34', 'Chain_51', 'Chain_4', 'Cardano', 'Chain_45', 'Chain_18', 'Chain_53', 'Chain_49'];
 
