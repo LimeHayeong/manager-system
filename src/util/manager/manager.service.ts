@@ -224,8 +224,8 @@ export class ManagerService {
             }
         })
     }
-
-    @OnEvent('getIntialTaskStates')
+    
+    @OnEvent('getInitialTaskStates')
     handleGetInitialTaskStates() {
         const data = this.taskStatesNoLogs();
         this.eventEmitter.emit(

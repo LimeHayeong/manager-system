@@ -59,7 +59,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.emit('taskLog', response);
   }
 
-  @OnEvent('getIntialTaskStatesResponse')
+  @OnEvent('initailTaskStatesResponse')
   handleIntialState(data: any){
     const response: WebSocketResponse = {
       success: true,

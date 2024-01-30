@@ -10,6 +10,6 @@ export class WsService {
     }
 
     public getInitial() {
-        return this.eventEmitter.emit('getInitialTaskStates');
+        this.eventEmitter.emit('getInitialTaskStates');
     }
 }
