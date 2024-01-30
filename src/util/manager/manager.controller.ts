@@ -11,4 +11,10 @@ export class ManagerController {
     public getTaskStates() {
         return this.managerService.getTaskStates();
     }
+
+    // for test
+    @Get('taskStatesNoLogs')
+    public getTaskStatesNoLogs() {
+        return this.managerService.getTaskStatesNoLogswithLength();
+    }
 }

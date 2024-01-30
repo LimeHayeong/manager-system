@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Task } from './types/task';
+import { Task } from '../types/task';
 
 // Q. 같은 domain, task인데 다른 실행방법을 가지면 다르게 Log를 저장해야하나?? >> 생각해봐야함.
 const newTasks: Task.TaskStatewithLogs[] = [
@@ -35,8 +35,6 @@ const maxLogsNumber = 3;
 export class ManagerService {
     private taskStates: Task.TaskStatewithLogs[] = [];
     private maxRecentLogs;
-    // Q1. taskState의 각 Logs는 최신 3개 정도만 반영해야함.
-    // 
 
     // Q2. TaskState를 식별자로 찾는 로직이 있는데, 해당 과정이 효율적일까.
     // A. index로 바꿨음.
@@ -44,7 +42,8 @@ export class ManagerService {
     // >> 작업이 정의되어 있으니까 initialization 과정이 필요할 듯. (작업을 중도 퇴출 시키지 않는 한)
     // TODO.
 
-    constructor() {
+    constructor(
+    ) {
         // taskStates initialization
         // >> task 미리 알고 있으면 해당 task들 기본 작업.
         this.intialization();
@@ -52,6 +51,7 @@ export class ManagerService {
 
     // 사전 정의된 task들 넣어주는 작업. >> initialization.
     private intialization() {
+        // TODO: initalization의 경우 과거 Logs는 로그 파일 뒤져서 줘야함.
         this.taskStates = [];
         this.maxRecentLogs = maxLogsNumber
         newTasks.forEach(newTask => this.taskStates.push(newTask));
@@ -60,15 +60,12 @@ export class ManagerService {
 
     // for test
     public getTaskStates() {
-        return this.taskStates.map(taskState => {
-            const { recentLogs, ...remain } = taskState;
-            const recentLogsLength = recentLogs.length;
-            return {
-                ...remain,
-                recentLogsLength,
-                recentLogs,
-            }
-        })
+        return this.taskStatesLogswithLength()
+    }
+
+    // for test
+    public getTaskStatesNoLogswithLength() {
+        return this.taskStatesNoLogswithLength()
     }
 
     // initial 당시 해당 task가 활성화 되어있는지 확인
@@ -100,6 +97,7 @@ export class ManagerService {
             existingTask.updatedAt = Date.now();
             existingTask.endAt = null;
             const { recentLogs, ...remains } = existingTask;
+
             return {
                 taskState: remains,
                 taskIndex: taskIdx,
@@ -117,6 +115,7 @@ export class ManagerService {
         existingTask.updatedAt = Date.now();
         existingTask.endAt = Date.now();
         const { recentLogs, ...remain } = existingTask;
+
         return remain;
     }
     
@@ -147,8 +146,6 @@ export class ManagerService {
         }
         const logIdx = this.taskStates[taskIndex].recentLogs.length - 1
         this.taskStates[taskIndex].recentLogs[logIdx].push(log);
-
-        // gateway 전송
     }
 
     public updateTask() {
@@ -176,5 +173,35 @@ export class ManagerService {
     private findTaskwithId(contextId: string): number {
         const idx = this.taskStates.findIndex(taskState => taskState.contextId === contextId)
         return idx
+    }
+
+    private taskStatesNoLogs() {
+        return this.taskStates.map(taskState => {
+            const { recentLogs, ...remain } = taskState;
+            return remain;
+        })
+    }
+
+    private taskStatesNoLogswithLength() {
+        return this.taskStates.map(taskState => {
+            const { recentLogs, ...remain } = taskState;
+            const recentLogsLength = recentLogs.length;
+            return {
+                ...remain,
+                recentLogsLength,
+            }
+        })
+    }
+
+    private taskStatesLogswithLength() {
+        return this.taskStates.map(taskState => {
+            const { recentLogs, ...remain } = taskState;
+            const recentLogsLength = recentLogs.length;
+            return {
+                ...remain,
+                recentLogsLength,
+                recentLogs,
+            }
+        })
     }
 }

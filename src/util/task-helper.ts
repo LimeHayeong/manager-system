@@ -1,15 +1,18 @@
-import { LoggerService } from './logger/logger.service';
+import { FileLoggerService } from './file-logger/logger.service';
 import { ManagerService } from './manager/manager.service';
-import { Task } from './manager/types/task';
+import { Task } from './types/task';
+import { WsGateway } from './ws/ws.gateway';
 import { v4 as uuid } from 'uuid';
 
+// TODO: ConsoleLog, FileLog, WsLog를 winston transports를 써서 동시에 잘 처리해보자...
 export class TaskHelper {
   private taskState: Task.TaskState;
   private taskIndex: number;
 
   constructor(
     private readonly managerService: ManagerService,
-    private readonly loggerService: LoggerService,
+    private readonly fileLoggerService: FileLoggerService,
+    private readonly wsGateway: WsGateway,
   ) {
     this.taskState = {
       domain: '',
@@ -51,13 +54,15 @@ export class TaskHelper {
         taskType: this.taskState.taskType
       }, this.taskState.contextId);
     if(result){
-      // 상태가 제대로 있으면,
       this.taskState = result.taskState;
       this.taskIndex = result.taskIndex;
+
+      // 상태가 제대로 있으면, 상태 반영 제대로 된 것.
+      // TODO: 이제 그 흔적을 각각 console, file, ws에 반영하자.
       console.log(`[${this.taskState.domain}:${this.taskState.task}][START]`);
       const newLog = this.makeLog(Task.LogLevel.INFO, Task.Timing.START, '[START]', this.taskState.startAt)
       this.managerService.logTask(this.taskIndex, newLog);
-      this.loggerService.pushLog(newLog);
+      this.fileLoggerService.pushLog(newLog);
     }else{
       // TODO: 문제가 있으면,
 
@@ -68,7 +73,7 @@ export class TaskHelper {
     const newLog = this.makeLog(Task.LogLevel.INFO, Task.Timing.PROCESS, msg, Date.now())
     this.managerService.logTask(this.taskIndex, newLog)
     console.log(`[${this.taskState.domain}:${this.taskState.task}][PROCESS] ` + msg);
-    this.loggerService.pushLog(newLog);
+    this.fileLoggerService.pushLog(newLog);
   }
 
   public error(error: Error) {
@@ -76,14 +81,14 @@ export class TaskHelper {
     // error 관련 log는 구분해야할까?
     this.managerService.logTask(this.taskIndex, newLog)
     console.log(`[${this.taskState.domain}:${this.taskState.task}][ERROR] ` + error);
-    this.loggerService.pushLog(newLog)
+    this.fileLoggerService.pushLog(newLog)
   }
 
   public warn(data: any) {
     const newLog = this.makeLog(Task.LogLevel.WARN, Task.Timing.PROCESS, data, Date.now())
     this.managerService.logTask(this.taskIndex, newLog)
     console.log(`[${this.taskState.domain}:${this.taskState.task}][PROCESS][WARN] ` + data);
-    this.loggerService.pushLog(newLog)
+    this.fileLoggerService.pushLog(newLog)
   }
 
   public async end() {
@@ -91,10 +96,12 @@ export class TaskHelper {
     // logger queue 전송
     const newState = await this.managerService.endTask(this.taskIndex)
     if(newState){
+
+      // TODO: 이제 그 흔적을 각각 console, file, ws에 반영하자.
       const newLog = this.makeLog(Task.LogLevel.INFO, Task.Timing.END, '[END]', this.taskState.endAt)
       console.log(`[${this.taskState.domain}:${this.taskState.task}][END]`)
       this.managerService.logTask(this.taskIndex, newLog)
-      this.loggerService.pushLog(newLog)
+      this.fileLoggerService.pushLog(newLog)
     }else{
       // TODO: 문제가 있으면,
 

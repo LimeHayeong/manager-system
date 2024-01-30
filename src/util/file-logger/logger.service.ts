@@ -2,14 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Injectable } from '@nestjs/common';
-import { Task } from '../manager/types/task';
+import { Task } from '../types/task';
 
 const tempBufferSize = 500;
 const tempInterval = 5000;
 const tempfilename = 'log.json'
 
 @Injectable()
-export class LoggerService {
+export class FileLoggerService {
   private buffer: Task.Log[] = [];
   private maxBufferSize: number;
   private interval: number;
@@ -58,6 +58,11 @@ export class LoggerService {
 
   // for test
   public getBuffer() {
-    return this.buffer;
+    const buffer = this.buffer;
+    const size = this.buffer.length;
+    return {
+      buffersize: size,
+      buffer,
+    }
   }
 }

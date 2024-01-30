@@ -1,5 +1,5 @@
 import { AppService } from './app.service';
-import { LoggerModule } from './util/logger/logger.module';
+import { FileLoggerModule } from './util/file-logger/logger.module';
 import { ManagerModule } from './util/manager/manager.module';
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -12,7 +12,7 @@ import { WsModule } from './util/ws/ws.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    ServiceAModule, ServiceBModule, ServiceCModule, ServiceDModule, WsModule, ManagerModule, LoggerModule],
+    ServiceAModule, ServiceBModule, ServiceCModule, ServiceDModule, WsModule, ManagerModule, FileLoggerModule],
   controllers: [],
   providers: [AppService],
 })
