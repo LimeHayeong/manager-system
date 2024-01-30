@@ -11,7 +11,7 @@ export namespace Task {
     ERROR = 'error',
   }
 
-  export enum Timing {
+  export enum LogTiming {
     START = 'start',
     PROCESS = 'process',
     END = 'end',
@@ -29,7 +29,7 @@ export namespace Task {
     taskType?: TaskType;
     contextId: { [key: string]: string };
     level: LogLevel;
-    logTiming: Timing;
+    logTiming: LogTiming;
     data: string | Error | object;
     timestamp: number; // toISOString
   }

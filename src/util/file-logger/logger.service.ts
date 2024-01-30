@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 
 import { Injectable } from '@nestjs/common';
 import { Task } from '../types/task';
@@ -26,6 +25,7 @@ export class FileLoggerService {
     }, this.interval);
   }
 
+  // TaskLog buffer에 push.
   public async pushLog(log: Task.Log) {
     try {
         this.buffer.push(log);
@@ -38,6 +38,7 @@ export class FileLoggerService {
     }
   }
 
+  // Buffer 비우면서 파일 저장.
   public async flush() {
     try {
         console.log('flushing log buffer: ' + this.buffer.length);

@@ -39,6 +39,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     }
   }
 
+  // 내부 event
   @OnEvent('taskStateUpdate')
   handleTaskStateUpdate(data: any){
     const response: WebSocketResponse = {
@@ -49,6 +50,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.emit('taskStateUpdate', response);
   }
 
+  // 내부 event
   @OnEvent('taskLog')
   handleTaskLog(data: any){
     const response: WebSocketResponse = {
@@ -59,6 +61,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     this.server.emit('taskLog', response);
   }
 
+  // 내부 event
   @OnEvent('initailTaskStatesResponse')
   handleIntialState(data: any){
     const response: WebSocketResponse = {

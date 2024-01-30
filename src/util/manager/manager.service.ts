@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { Task } from '../types/task';
 
 // Q. 같은 domain, task인데 다른 실행방법을 가지면 다르게 Log를 저장해야하나?? >> 생각해봐야함.
+// A. 일단은 다르게 저장, 왜? 실행 context가 다름.
 const newTasks: Task.TaskStatewithLogs[] = [
     {
         domain: 'ServiceA',
@@ -37,12 +38,6 @@ const maxLogsNumber = 3;
 export class ManagerService {
     private taskStates: Task.TaskStatewithLogs[] = [];
     private maxRecentLogs;
-
-    // Q2. TaskState를 식별자로 찾는 로직이 있는데, 해당 과정이 효율적일까.
-    // A. index로 바꿨음.
-    // >> 두 번째 문제 배열의 순서가 바뀌면 문제가 생김
-    // >> 작업이 정의되어 있으니까 initialization 과정이 필요할 듯. (작업을 중도 퇴출 시키지 않는 한)
-    // TODO.
 
     constructor(
         private eventEmitter: EventEmitter2,
@@ -137,9 +132,9 @@ export class ManagerService {
         // TODO?: Index 유효성 검사?
         const taskState = this.taskStates[taskIndex];
 
-        //최근 Log 3개만 유지
+        // 최근 Log 3개만 유지
         // 로그 시작시 새 로그 배열 추가
-        if (log.logTiming === Task.Timing.START) {
+        if (log.logTiming === Task.LogTiming.START) {
             // recentLogs 배열 길이 확인 및 오래된 로그 제거
             if (taskState.recentLogs.length >= this.maxRecentLogs) {
                 taskState.recentLogs.shift();
@@ -152,8 +147,8 @@ export class ManagerService {
         const currentLogArray = taskState.recentLogs[taskState.recentLogs.length - 1];
         currentLogArray.push(log);
 
-        //taskState 업데이트
-        if(log.logTiming !== Task.Timing.START && log.logTiming !== Task.Timing.END){
+        // taskState 업데이트
+        if(log.logTiming !== Task.LogTiming.START && log.logTiming !== Task.LogTiming.END){
             // 시작과 끝이 아닌 경우,
             taskState.updatedAt = log.timestamp;
         }
@@ -188,6 +183,7 @@ export class ManagerService {
         }
     }
 
+    // deprecated > array index단위로 바꿈.
     // contextId로 task 찾아주는 helper function
     // return: index
     private findTaskwithId(contextId: string): number {
@@ -195,6 +191,7 @@ export class ManagerService {
         return idx
     }
 
+    // taskStates에서 recentLogs 제외하고 return
     private taskStatesNoLogs() {
         return this.taskStates.map(taskState => {
             const { recentLogs, ...remain } = taskState;
@@ -202,6 +199,7 @@ export class ManagerService {
         })
     }
 
+    // taskStates에서 recentLogs 제외하고 Log수 추가해서 return
     private taskStatesNoLogswithLength() {
         return this.taskStates.map(taskState => {
             const { recentLogs, ...remain } = taskState;
@@ -213,6 +211,7 @@ export class ManagerService {
         })
     }
 
+    // taskStates에서 Log수 추가해서 return
     private taskStatesLogswithLength() {
         return this.taskStates.map(taskState => {
             const { recentLogs, ...remain } = taskState;
@@ -225,6 +224,7 @@ export class ManagerService {
         })
     }
     
+    // 내부 event
     @OnEvent('getInitialTaskStates')
     handleGetInitialTaskStates() {
         const data = this.taskStatesNoLogs();

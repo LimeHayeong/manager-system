@@ -8,7 +8,6 @@ import { Injectable } from '@nestjs/common';
 import { ManagerService } from 'src/util/manager/manager.service';
 import { Task } from 'src/util/types/task';
 import { TaskHelper } from 'src/util/task-helper';
-import { WsGateway } from 'src/util/ws/ws.gateway';
 import { delay } from 'src/util/delay';
 import { promises as fs } from 'fs';
 import { genereateRandomNumber as grn } from 'src/util/random';
@@ -34,13 +33,12 @@ export class ServiceAService {
       taskType: Task.TaskType.TRIGGER,
     }
     this.clsService.run(async() => {
-      // TODO: build시의 유효성을 한 번에 몰아서 처리하는 게 좋을 듯.
       try {
         this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
         this.taskHelper().build(opts.domain, opts.task, opts.taskType);
         await this.processRun();
       } catch (e) {
-        // build level error
+        // TODO: build level error
 
       }
     })
@@ -68,8 +66,6 @@ export class ServiceAService {
   public async processRun() {
       await this.taskHelper().start();
 
-      //console.log(this);
-
       const promiseInfo = [];
       for (const chainChunk of _.chunk(chains, 20)) {
         const chunkInfos = await Promise.all(
@@ -95,16 +91,17 @@ export class ServiceAService {
       await this.taskHelper().end();
   }
 
+  // 무언가를 하는 dummy function, 약 1,2초 걸림.
   private async doSomething(chainInfo: any) {
     try {
       if (chainInfo.price == null){
         throw new Error(`[${chainInfo.chainName}] no data`);
       }
 
-      const tempfilePath = path.join(__dirname, tempfilename);
-      const data = JSON.stringify(chainInfo);
+      // const tempfilePath = path.join(__dirname, tempfilename);
+      // const data = JSON.stringify(chainInfo);
       // console.log(tempfilePath);
-      await fs.writeFile(tempfilePath, data);
+      // await fs.writeFile(tempfilePath, data);
       //console.log(this);
       await delay(grn(1, 2));
       this.taskHelper().log(`[${chainInfo.chainName}] okay`);
@@ -113,6 +110,7 @@ export class ServiceAService {
     }
   }
 
+  // 무언가를 하는 dummy function, 약 1,2초 걸림. 1/10 확률로 price가 null임.
   private async doSomething2(chain: string) {
     // const rn = Math.random();
     await delay(grn(1, 2));
@@ -124,6 +122,7 @@ export class ServiceAService {
     }
   }
 
+  // cls wrapper
   private taskHelper(): TaskHelper{
     return this.clsService.get('TaskHelper') as TaskHelper
   }

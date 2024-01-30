@@ -25,7 +25,6 @@ export class TaskHelper {
       endAt: null,
     }
   }
-  // 이럴 거면 모듈로 정의하는게 ..?
 
   // Q1. build level과 isAvailable이 Logical하게 함께가 맞을까?
   public build(domain: string, task: string, taskType: Task.TaskType, contextId?: string) {
@@ -44,7 +43,6 @@ export class TaskHelper {
     }
   }
 
-  // Managerservice에서 시작에 이상 없으면, Console에 찍고 Logger에 push
   public async start() {
     const result = await this.managerService.startTask(
       {
@@ -53,15 +51,11 @@ export class TaskHelper {
         taskType: this.taskState.taskType
       }, this.taskState.contextId);
     if(result){
+      // 상태가 제대로 있으면, 상태 반영 제대로 된 것.
       this.taskState = result.taskState;
       this.taskIndex = result.taskIndex;
-
-      // 상태가 제대로 있으면, 상태 반영 제대로 된 것.
-      // TODO: 이제 그 흔적을 각각 console, file, ws에 반영하자.
-      console.log(`[${this.taskState.domain}:${this.taskState.task}][START]`);
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.Timing.START, '[START]', this.taskState.startAt)
-      this.managerService.logTask(this.taskIndex, newLog);
-      this.fileLoggerService.pushLog(newLog);
+      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.START, '[START]', this.taskState.startAt)
+      this.logTransfer(newLog)
     }else{
       // TODO: 문제가 있으면,
 
@@ -69,45 +63,33 @@ export class TaskHelper {
   }
 
   public log(msg: string) {
-    const newLog = this.makeLog(Task.LogLevel.INFO, Task.Timing.PROCESS, msg, Date.now())
-    this.managerService.logTask(this.taskIndex, newLog)
-    console.log(`[${this.taskState.domain}:${this.taskState.task}][PROCESS] ` + msg);
-    this.fileLoggerService.pushLog(newLog);
+    const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.PROCESS, msg, Date.now())
+    this.logTransfer(newLog);
   }
 
   public error(error: Error) {
-    const newLog = this.makeLog(Task.LogLevel.ERROR, Task.Timing.PROCESS, error, Date.now())
-    // error 관련 log는 구분해야할까?
-    this.managerService.logTask(this.taskIndex, newLog)
-    console.log(`[${this.taskState.domain}:${this.taskState.task}][ERROR] ` + error);
-    this.fileLoggerService.pushLog(newLog)
+    const newLog = this.makeLog(Task.LogLevel.ERROR, Task.LogTiming.PROCESS, error, Date.now())
+    this.logTransfer(newLog);
   }
 
   public warn(data: any) {
-    const newLog = this.makeLog(Task.LogLevel.WARN, Task.Timing.PROCESS, data, Date.now())
-    this.managerService.logTask(this.taskIndex, newLog)
-    console.log(`[${this.taskState.domain}:${this.taskState.task}][PROCESS][WARN] ` + data);
-    this.fileLoggerService.pushLog(newLog)
+    const newLog = this.makeLog(Task.LogLevel.WARN, Task.LogTiming.PROCESS, data, Date.now())
+    this.logTransfer(newLog);
   }
 
   public async end() {
-    // manager 상태 반영
-    // logger queue 전송
     const newState = await this.managerService.endTask(this.taskIndex)
     if(newState){
-
-      // TODO: 이제 그 흔적을 각각 console, file, ws에 반영하자.
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.Timing.END, '[END]', this.taskState.endAt)
-      console.log(`[${this.taskState.domain}:${this.taskState.task}][END]`)
-      this.managerService.logTask(this.taskIndex, newLog)
-      this.fileLoggerService.pushLog(newLog)
+      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', this.taskState.endAt)
+      this.logTransfer(newLog)
     }else{
       // TODO: 문제가 있으면,
-
+      
     }
   }
 
-  private makeLog(level: Task.LogLevel, timing: Task.Timing, data: any, timestamp: number): Task.Log {
+  // 정보를 Log로 formatting하는 함수.
+  private makeLog(level: Task.LogLevel, timing: Task.LogTiming, data: any, timestamp: number): Task.Log {
     if(data instanceof Error){
       data = {
         name: data.name,
@@ -125,5 +107,13 @@ export class TaskHelper {
         data: data,
         timestamp: timestamp
     }
+  }
+
+  // Log Transfer.
+  // console, manager(ws), file에 각각 로그를 전달하는 함수.
+  private logTransfer(log: Task.Log){
+    console.log(`[${log.domain}:${log.task}][${log.logTiming}][${log.level}] ` + log.data);
+    this.managerService.logTask(this.taskIndex, log)
+    this.fileLoggerService.pushLog(log);
   }
 }

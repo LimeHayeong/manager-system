@@ -6,6 +6,7 @@ import { FileLoggerService } from './logger.service';
 export class FileLoggerController {
     constructor(private readonly loggerService: FileLoggerService) {}
 
+    // for test
     @Get('buffer')
     public getBuffer() {
         return this.loggerService.getBuffer();
