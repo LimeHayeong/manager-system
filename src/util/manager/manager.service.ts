@@ -260,6 +260,7 @@ export class ManagerService {
     // 들어오는 Log, 해당 taskIndex logs에 push.
     public async logTask(taskIndex: number, log: Task.Log) {
         // TODO?: Index 유효성 검사?
+        // console.log(taskIndex);
         const taskState = this.taskStates[taskIndex];
 
         // 최근 Log 3개만 유지
@@ -274,7 +275,10 @@ export class ManagerService {
         }
 
         // 로그 추가 (가장 최근 로그 배열에 로그 추가)
+        
         const currentLogArray = taskState.recentLogs[taskState.recentLogs.length - 1];
+        // console. 추가하니까 갑자기 뻑이 안남.
+        console.log(currentLogArray)
         currentLogArray.push(log);
 
         // taskState 업데이트
@@ -282,9 +286,6 @@ export class ManagerService {
             // 시작과 끝이 아닌 경우,
             taskState.updatedAt = log.timestamp;
         }
-        const logIdx = this.taskStates[taskIndex].recentLogs.length - 1
-        this.taskStates[taskIndex].recentLogs[logIdx].push(log);
-
         // wsGateway
         const eventData = this.taskStates;
         this.eventEmitter.emit(

@@ -64,17 +64,17 @@ export class TaskHelper {
     }
   }
 
-  public log(msg: string) {
+  public async log(msg: string) {
     const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.PROCESS, msg, Date.now())
     this.logTransfer(newLog);
   }
 
-  public error(error: Error) {
+  public async error(error: Error) {
     const newLog = this.makeLog(Task.LogLevel.ERROR, Task.LogTiming.PROCESS, error, Date.now())
     this.logTransfer(newLog);
   }
 
-  public warn(data: any) {
+  public async warn(data: any) {
     const newLog = this.makeLog(Task.LogLevel.WARN, Task.LogTiming.PROCESS, data, Date.now())
     this.logTransfer(newLog);
   }
@@ -113,9 +113,9 @@ export class TaskHelper {
 
   // Log Transfer.
   // console, manager(ws), file에 각각 로그를 전달하는 함수.
-  private logTransfer(log: Task.Log){
+  private async logTransfer(log: Task.Log){
     console.log(`[${log.domain}:${log.task}][${log.level}][${log.logTiming}] ` + log.data);
-    this.managerService.logTask(this.taskIndex, log)
-    this.fileLoggerService.pushLog(log);
+    await this.managerService.logTask(this.taskIndex, log)
+    await this.fileLoggerService.pushLog(log);
   }
 }
