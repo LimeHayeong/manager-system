@@ -138,6 +138,44 @@ export class ManagerService {
         return this.taskStatesNoLogswithLength()
     }
 
+    // HTTP call을 받아 Task 시작.
+    public controlStartTask(taskIdentifier: Task.ITaskIdentity): boolean {
+        const taskIdx = this.findTask(taskIdentifier)
+        if(this.taskStates[taskIdx].status === Task.TaskStatus.PROGRESS){
+            // task가 실행중이면 false
+            return false;
+        }
+        
+        // task 활성화
+        this.taskStates[taskIdx].isAvailable = true;
+
+        // task가 trigger면 trigger.
+        if(this.taskStates[taskIdx].taskType === Task.TaskType.TRIGGER){
+            this.eventEmitter.emit(`startTask:${taskIdentifier.domain}:${taskIdentifier.task}:${taskIdentifier.taskType}`);
+        }
+
+        return true
+    }
+
+    // HTTP call을 받아 Task 종료.
+    public controlStopTask(taskIdentifier: Task.ITaskIdentity): boolean {
+        const taskIdx = this.findTask(taskIdentifier)
+        if(this.taskStates[taskIdx].status === Task.TaskStatus.TERMINATED){
+            // task가 종료되었으면 false
+            return false;
+        }
+
+        // 이번까지만 실행됨.
+        this.taskStates[taskIdx].isAvailable = false;
+        
+        // CRON이 waiting 중일 때는 terminated로 바꿔줌.
+        if(this.taskStates[taskIdx].taskType === Task.TaskType.CRON && this.taskStates[taskIdx].status === Task.TaskStatus.WAITING) {
+            this.taskStates[taskIdx].status = Task.TaskStatus.TERMINATED;
+        }
+
+        return true
+    }
+
     // task build시, 해당 task가 활성화 되어있는지 확인
     // return: true(available), false
     public isTaskAvailable(taskIdentifier: Task.ITaskIdentity): boolean {
@@ -146,7 +184,7 @@ export class ManagerService {
             // task가 없으면, false
             return false;
         }
-        return true;
+        return this.taskStates[taskIndex].isAvailable;
     }
 
     // task build시, 해당 task가 실행중인지 확인
@@ -169,11 +207,12 @@ export class ManagerService {
         const taskIdx = this.findTask(taskId);
         if(taskIdx !== -1){
             // 실행 context에 관한 건 intialization시 초기화 됨.
+            const dateNow = Date.now();
             const existingTask = this.taskStates[taskIdx];
             existingTask.status = Task.TaskStatus.PROGRESS;
             existingTask.contextId = contextId;
-            existingTask.startAt = Date.now();
-            existingTask.updatedAt = Date.now();
+            existingTask.startAt = dateNow
+            existingTask.updatedAt = dateNow
             existingTask.endAt = null;
             const { recentLogs, ...remains } = existingTask;
             // wsGateway에 전달
@@ -195,6 +234,7 @@ export class ManagerService {
     public async endTask(taskIndex: number): Promise<Task.TaskState> {
         // TODO?: Index 유효성 검사?
 
+        const dateNow = Date.now();
         const existingTask = this.taskStates[taskIndex];
         if(existingTask.taskType === Task.TaskType.CRON){
             // CRON은 waiting
@@ -203,8 +243,8 @@ export class ManagerService {
             // TRIGGER는 terminated
             existingTask.status = Task.TaskStatus.TERMINATED;
         }
-        existingTask.updatedAt = Date.now();
-        existingTask.endAt = Date.now();
+        existingTask.updatedAt = dateNow
+        existingTask.endAt = dateNow
         
         const { recentLogs, ...remain } = existingTask;
         // wsGateway에 전달

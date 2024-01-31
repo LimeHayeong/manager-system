@@ -1,0 +1,148 @@
+@URL = 127.0.0.1
+@PORT = 3001
+
+### 현재 manager 상태 가져오기
+GET http://{{URL}}:{{PORT}}/manager/taskStatesNoLogs HTTP/1.1
+
+### 현재 Logger 상태 가져오기
+GET http://{{URL}}:{{PORT}}/logger/buffer HTTP/1.1
+
+### ServiceA:processRun:TRIGGER start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{ 
+    "domain": "ServiceA",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceA:processRun:TRIGGER stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceA",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceA:processRun:CRON start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceA",
+    "task": "processRun",
+    "taskType": "CRON"
+}
+
+### ServiceA:processRun:CRON stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceA",
+    "task": "processRun",
+    "taskType": "CRON"
+}
+
+### ServiceB:processRun:TRIGGER start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceB",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceB:processRun:TRIGGER stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceB",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceB:processRun:CRON start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceB",
+    "task": "processRun",
+    "taskType": "CRON"
+}
+
+### ServiceB:processRun:CRON stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceB",
+    "task": "processRun",
+    "taskType": "CRON"
+}
+
+### ServiceC:processRun:TRIGGER start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{ 
+    "domain": "ServiceC",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceC:processRun:TRIGGER stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceC",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceC:processHelper:TRIGGER start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{ 
+    "domain": "ServiceC",
+    "task": "processHelper",
+    "taskType": "TRIGGER"
+}
+
+### ServiceC:processHelper:TRIGGER stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceC",
+    "task": "processHelper",
+    "taskType": "TRIGGER"
+}
+
+### ServiceD:processRun:TRIGGER start
+POST http://{{URL}}:{{PORT}}/manager/start HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{ 
+    "domain": "ServiceD",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}
+
+### ServiceD:processRun:TRIGGER stop
+POST http://{{URL}}:{{PORT}}/manager/stop HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "domain": "ServiceD",
+    "task": "processRun",
+    "taskType": "TRIGGER"
+}

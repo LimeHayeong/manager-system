@@ -20,7 +20,7 @@ export class ServiceCService {
         private readonly managerService: ManagerService,
     ) {}
 
-    public async processTriger() {
+    public async processTrigger() {
         this.clsService.run(async() => {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))

@@ -33,7 +33,7 @@ export class ServiceDService {
         private readonly managerService: ManagerService,
     ) {}
 
-    public async processTriger() {
+    public async processTrigger() {
         this.clsService.run(async() => {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
@@ -45,7 +45,7 @@ export class ServiceDService {
         })
     }
 
-    // 뭔가 진행률 표시에 도움될만한 오브젝트를 넣어주자.
+    // TODO?: 뭔가 진행률 표시에 도움될만한 오브젝트를 넣어주자.
     private async processRun() {
         this.taskHelper().start();
 

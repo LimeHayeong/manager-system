@@ -36,7 +36,7 @@ export class ServiceAService {
         await this.processRun();
       } catch(e) {
         // build level error
-        console.error(e);
+        console.log(e.message)
       }
     })
   }
@@ -50,7 +50,7 @@ export class ServiceAService {
         await this.processRun();
       } catch (e) {
         // build level error
-        console.error(e);
+        console.log(e.message)
       }
     })
   }

@@ -1,7 +1,6 @@
 import { FileLoggerService } from './file-logger/logger.service';
 import { ManagerService } from './manager/manager.service';
 import { Task } from './types/task';
-import { WsGateway } from './ws/ws.gateway';
 import { v4 as uuid } from 'uuid';
 
 // TODO: ConsoleLog, FileLog, WsLog를 winston transports를 써서 동시에 잘 처리해보자...
@@ -37,7 +36,7 @@ export class TaskHelper {
 
     // task가 실행중이면
     if(this.managerService.isTaskRunning({domain, task, taskType})){
-      throw new Error('Task is not running');
+      throw new Error('Task is already running');
     }
 
     this.taskState.domain = domain;
@@ -83,7 +82,7 @@ export class TaskHelper {
   public async end() {
     const newState = await this.managerService.endTask(this.taskIndex)
     if(newState){
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', this.taskState.endAt)
+      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', newState.endAt)
       this.logTransfer(newLog)
     }else{
       // TODO: 문제가 있으면,

@@ -4,6 +4,7 @@ import { Server, Socket } from 'socket.io'
 
 import { WebSocketResponse } from '../types/ws';
 import { WsService } from './ws.service';
+import { v4 as uuid } from 'uuid';
 
 @WebSocketGateway(3031, { namespace: 'ws', cors: { origin: '*'} })
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
@@ -45,6 +46,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const response: WebSocketResponse = {
       success: true,
       statusCode: 200,
+      responseId: uuid(),
       payload: data,
     }
     this.server.emit('taskStateUpdate', response);
@@ -56,6 +58,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const response: WebSocketResponse = {
       success: true,
       statusCode: 200,
+      responseId: uuid(),
       payload: data,
     }
     this.server.emit('taskLog', response);
@@ -67,6 +70,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
     const response: WebSocketResponse = {
       success: true,
       statusCode: 200,
+      responseId: uuid(),
       payload: data,
     }
     this.server.emit('connectResponse', response);
