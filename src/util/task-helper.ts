@@ -26,21 +26,24 @@ export class TaskHelper {
     }
   }
 
-  // Q1. build level과 isAvailable이 Logical하게 함께가 맞을까?
   public build(domain: string, task: string, taskType: Task.TaskType, contextId?: string) {
     if(!contextId){
       contextId = uuid();
     }
-    if(this.managerService.isTaskAvailable({domain, task, taskType})){
-      // true면...
-      this.taskState.domain = domain;
-      this.taskState.task = task;
-      this.taskState.taskType = taskType;
-      this.taskState.contextId = contextId;
-    }else{
-      // TODO: false면...
-      console.log('task build fail')
+    // task가 활성화 되었는지 확인
+    if(!this.managerService.isTaskAvailable({domain, task, taskType})){
+      throw new Error('Task is not available');
     }
+
+    // task가 실행중이면
+    if(this.managerService.isTaskRunning({domain, task, taskType})){
+      throw new Error('Task is not running');
+    }
+
+    this.taskState.domain = domain;
+    this.taskState.task = task;
+    this.taskState.taskType = taskType;
+    this.taskState.contextId = contextId;
   }
 
   public async start() {
@@ -112,7 +115,7 @@ export class TaskHelper {
   // Log Transfer.
   // console, manager(ws), file에 각각 로그를 전달하는 함수.
   private logTransfer(log: Task.Log){
-    console.log(`[${log.domain}:${log.task}][${log.logTiming}][${log.level}] ` + log.data);
+    console.log(`[${log.domain}:${log.task}][${log.level}][${log.logTiming}] ` + log.data);
     this.managerService.logTask(this.taskIndex, log)
     this.fileLoggerService.pushLog(log);
   }

@@ -1,26 +1,26 @@
 export namespace Task {
   export enum TaskType {
-    CRON = 'cron',
-    TRIGGER = 'trigger',
-    WORK = 'work',
+    CRON = 'CRON',
+    TRIGGER = 'TRIGGER',
+    WORK = 'WROK',
   }
 
   export enum LogLevel {
-    INFO = 'info',
-    WARN = 'warn',
-    ERROR = 'error',
+    INFO = 'INFO',
+    WARN = 'WARN',
+    ERROR = 'ERROR',
   }
 
   export enum LogTiming {
-    START = 'start',
-    PROCESS = 'process',
-    END = 'end',
+    START = 'START',
+    PROCESS = 'PROCESS',
+    END = 'END',
   }
 
   export const enum TaskStatus {
-    TERMINATED = 'terminated',
-    PROGRESS = 'progress',
-    WAITING = 'waiting',
+    TERMINATED = 'TERMINATED',
+    PROGRESS = 'PROGRESS',
+    WAITING = 'WAITING',
   }
 
   export interface Log {

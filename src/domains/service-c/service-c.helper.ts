@@ -5,28 +5,16 @@ import { ManagerService } from 'src/util/manager/manager.service';
 import { Task } from 'src/util/types/task';
 import { TaskHelper } from 'src/util/task-helper';
 import { delay } from 'src/util/delay';
+import { genereateRandomNumber } from 'src/util/random';
 
 const opts = {
-    domain: 'ServiceD',
-    task: 'processRun',
+    domain: 'ServiceC',
+    task: 'processHelper',
 }
-const chains = [
-    "Bitcoin",
-    "Ethereum",
-    "Ripple",
-    "Litecoin",
-    "Cardano",
-    "Polkadot",
-    "Solana",
-    "Chainlink",
-    "Tezos",
-    "Binance Smart Chain"
-]
 
-
-// 엄청 오래 걸리는 작업을 가정?
+// 대충 trigger만 있는 helper service.
 @Injectable()
-export class ServiceDService {
+export class ServiceCHelper {
     constructor(
         private readonly clsService: ClsService,
         private readonly fileLoggerService: FileLoggerService,
@@ -38,28 +26,28 @@ export class ServiceDService {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
                 this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-                await this.processRun();
+                await this.processHelper();
             } catch (e) {
                 console.error(e);
             }
         })
     }
-
-    // 뭔가 진행률 표시에 도움될만한 오브젝트를 넣어주자.
-    private async processRun() {
+    
+    private async processHelper() {
         this.taskHelper().start();
-
-        for (const chain of chains) {
-            await this.doSomethingLong(chain);
-        }
-        
+        await this.helpSomething();
         this.taskHelper().end();
     }
 
-    // 1개당 1분 걸림.
-    private async doSomethingLong(chain: string) {;
-        await delay(60);
-        this.taskHelper().log(`[${chain}] process done`);
+    // 무언가가 40초에서 80초까지 걸리고, 중간중간 진행율을 보여줌.
+    private async helpSomething() {
+        await delay(genereateRandomNumber(10, 20));
+        this.taskHelper().log('25% done')
+        await delay(genereateRandomNumber(10, 20));
+        this.taskHelper().log('50% done')
+        await delay(genereateRandomNumber(10, 20));
+        this.taskHelper().log('75% done')
+        await delay(genereateRandomNumber(10, 20));
     }
 
     private taskHelper(): TaskHelper {
