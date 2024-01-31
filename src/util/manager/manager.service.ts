@@ -22,6 +22,18 @@ const newTasks: Task.TaskStatewithLogs[] = [
         domain: 'ServiceA',
         task: 'processRun',
         taskType: Task.TaskType.CRON,
+        status: Task.TaskStatus.WAITING,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: []
+    },
+    {
+        domain: 'ServiceB',
+        task: 'processRun',
+        taskType: Task.TaskType.TRIGGER,
         status: Task.TaskStatus.TERMINATED,
         contextId: null,
         isAvailable: true,
@@ -29,7 +41,67 @@ const newTasks: Task.TaskStatewithLogs[] = [
         startAt: null,
         endAt: null,
         recentLogs: []
-    }
+    },
+    {
+        domain: 'ServiceB',
+        task: 'processRun',
+        taskType: Task.TaskType.CRON,
+        status: Task.TaskStatus.WAITING,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: []
+    },
+    {
+        domain: 'ServiceC',
+        task: 'processRun',
+        taskType: Task.TaskType.TRIGGER,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: []
+    },
+    // {
+    //     domain: 'ServiceC',
+    //     task: 'processRun',
+    //     taskType: Task.TaskType.CRON,
+    //     status: Task.TaskStatus.TERMINATED,
+    //     contextId: null,
+    //     isAvailable: true,
+    //     updatedAt: null,
+    //     startAt: null,
+    //     endAt: null,
+    //     recentLogs: []
+    // },
+    {
+        domain: 'ServiceC',
+        task: 'processHelper',
+        taskType: Task.TaskType.TRIGGER,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: []
+    },
+    {
+        domain: 'ServiceD',
+        task: 'processRun',
+        taskType: Task.TaskType.TRIGGER,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: []
+    },
 ]
 
 const maxLogsNumber = 3;
@@ -66,16 +138,63 @@ export class ManagerService {
         return this.taskStatesNoLogswithLength()
     }
 
-    // initial 당시 해당 task가 활성화 되어있는지 확인
+    // HTTP call을 받아 Task 시작.
+    public controlStartTask(taskIdentifier: Task.ITaskIdentity): boolean {
+        const taskIdx = this.findTask(taskIdentifier)
+        if(this.taskStates[taskIdx].status === Task.TaskStatus.PROGRESS){
+            // task가 실행중이면 false
+            return false;
+        }
+        
+        // task 활성화
+        this.taskStates[taskIdx].isAvailable = true;
+
+        // task가 trigger면 trigger.
+        if(this.taskStates[taskIdx].taskType === Task.TaskType.TRIGGER){
+            this.eventEmitter.emit(`startTask:${taskIdentifier.domain}:${taskIdentifier.task}:${taskIdentifier.taskType}`);
+        }
+
+        return true
+    }
+
+    // HTTP call을 받아 Task 종료.
+    public controlStopTask(taskIdentifier: Task.ITaskIdentity): boolean {
+        const taskIdx = this.findTask(taskIdentifier)
+        if(this.taskStates[taskIdx].status === Task.TaskStatus.TERMINATED){
+            // task가 종료되었으면 false
+            return false;
+        }
+
+        // 이번까지만 실행됨.
+        this.taskStates[taskIdx].isAvailable = false;
+        
+        // CRON이 waiting 중일 때는 terminated로 바꿔줌.
+        if(this.taskStates[taskIdx].taskType === Task.TaskType.CRON && this.taskStates[taskIdx].status === Task.TaskStatus.WAITING) {
+            this.taskStates[taskIdx].status = Task.TaskStatus.TERMINATED;
+        }
+
+        return true
+    }
+
+    // task build시, 해당 task가 활성화 되어있는지 확인
     // return: true(available), false
     public isTaskAvailable(taskIdentifier: Task.ITaskIdentity): boolean {
-        // console.log(taskIdentifier)
         const taskIndex = this.findTask(taskIdentifier)
-        if(taskIndex !== -1){
-            // console.log(taskIdentifier.domain + ':' + taskIdentifier.task + ' is available')
-            return this.taskStates[taskIndex].isAvailable
+        if(taskIndex === -1){
+            // task가 없으면, false
+            return false;
         }
-        console.log(taskIdentifier.domain + ':' + taskIdentifier.task + ' is not available')
+        return this.taskStates[taskIndex].isAvailable;
+    }
+
+    // task build시, 해당 task가 실행중인지 확인
+    // return: true(on Running), false
+    public isTaskRunning(taskIdentifier: Task.ITaskIdentity): boolean {
+        // task가 실행중이면 false
+        const taskIndex = this.findTask(taskIdentifier)
+        if(this.taskStates[taskIndex].status === Task.TaskStatus.PROGRESS){
+            return true;
+        }
         return false;
     }
 
@@ -88,11 +207,12 @@ export class ManagerService {
         const taskIdx = this.findTask(taskId);
         if(taskIdx !== -1){
             // 실행 context에 관한 건 intialization시 초기화 됨.
+            const dateNow = Date.now();
             const existingTask = this.taskStates[taskIdx];
             existingTask.status = Task.TaskStatus.PROGRESS;
             existingTask.contextId = contextId;
-            existingTask.startAt = Date.now();
-            existingTask.updatedAt = Date.now();
+            existingTask.startAt = dateNow
+            existingTask.updatedAt = dateNow
             existingTask.endAt = null;
             const { recentLogs, ...remains } = existingTask;
             // wsGateway에 전달
@@ -113,10 +233,19 @@ export class ManagerService {
     // Log는 별도로 찍힘.
     public async endTask(taskIndex: number): Promise<Task.TaskState> {
         // TODO?: Index 유효성 검사?
+
+        const dateNow = Date.now();
         const existingTask = this.taskStates[taskIndex];
-        existingTask.status = Task.TaskStatus.TERMINATED;
-        existingTask.updatedAt = Date.now();
-        existingTask.endAt = Date.now();
+        if(existingTask.taskType === Task.TaskType.CRON){
+            // CRON은 waiting
+            existingTask.status = Task.TaskStatus.WAITING;
+        }else {
+            // TRIGGER는 terminated
+            existingTask.status = Task.TaskStatus.TERMINATED;
+        }
+        existingTask.updatedAt = dateNow
+        existingTask.endAt = dateNow
+        
         const { recentLogs, ...remain } = existingTask;
         // wsGateway에 전달
         const eventData = this.taskStatesNoLogs();
@@ -124,6 +253,7 @@ export class ManagerService {
             'taskStateUpdate',
             eventData,
         )
+        
         return remain;
     }
     

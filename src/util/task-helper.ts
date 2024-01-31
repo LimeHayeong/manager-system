@@ -1,7 +1,6 @@
 import { FileLoggerService } from './file-logger/logger.service';
 import { ManagerService } from './manager/manager.service';
 import { Task } from './types/task';
-import { WsGateway } from './ws/ws.gateway';
 import { v4 as uuid } from 'uuid';
 
 // TODO: ConsoleLog, FileLog, WsLog를 winston transports를 써서 동시에 잘 처리해보자...
@@ -26,21 +25,24 @@ export class TaskHelper {
     }
   }
 
-  // Q1. build level과 isAvailable이 Logical하게 함께가 맞을까?
   public build(domain: string, task: string, taskType: Task.TaskType, contextId?: string) {
     if(!contextId){
       contextId = uuid();
     }
-    if(this.managerService.isTaskAvailable({domain, task, taskType})){
-      // true면...
-      this.taskState.domain = domain;
-      this.taskState.task = task;
-      this.taskState.taskType = taskType;
-      this.taskState.contextId = contextId;
-    }else{
-      // TODO: false면...
-      console.log('task build fail')
+    // task가 활성화 되었는지 확인
+    if(!this.managerService.isTaskAvailable({domain, task, taskType})){
+      throw new Error('Task is not available');
     }
+
+    // task가 실행중이면
+    if(this.managerService.isTaskRunning({domain, task, taskType})){
+      throw new Error('Task is already running');
+    }
+
+    this.taskState.domain = domain;
+    this.taskState.task = task;
+    this.taskState.taskType = taskType;
+    this.taskState.contextId = contextId;
   }
 
   public async start() {
@@ -80,7 +82,7 @@ export class TaskHelper {
   public async end() {
     const newState = await this.managerService.endTask(this.taskIndex)
     if(newState){
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', this.taskState.endAt)
+      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', newState.endAt)
       this.logTransfer(newLog)
     }else{
       // TODO: 문제가 있으면,
@@ -112,7 +114,7 @@ export class TaskHelper {
   // Log Transfer.
   // console, manager(ws), file에 각각 로그를 전달하는 함수.
   private logTransfer(log: Task.Log){
-    console.log(`[${log.domain}:${log.task}][${log.logTiming}][${log.level}] ` + log.data);
+    console.log(`[${log.domain}:${log.task}][${log.level}][${log.logTiming}] ` + log.data);
     this.managerService.logTask(this.taskIndex, log)
     this.fileLoggerService.pushLog(log);
   }

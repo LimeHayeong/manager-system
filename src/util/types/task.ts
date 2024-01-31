@@ -1,26 +1,26 @@
 export namespace Task {
   export enum TaskType {
-    CRON = 'cron',
-    TRIGGER = 'trigger',
-    WORK = 'work',
+    CRON = 'CRON',
+    TRIGGER = 'TRIGGER',
+    WORK = 'WROK',
   }
 
   export enum LogLevel {
-    INFO = 'info',
-    WARN = 'warn',
-    ERROR = 'error',
+    INFO = 'INFO',
+    WARN = 'WARN',
+    ERROR = 'ERROR',
   }
 
   export enum LogTiming {
-    START = 'start',
-    PROCESS = 'process',
-    END = 'end',
+    START = 'START',
+    PROCESS = 'PROCESS',
+    END = 'END',
   }
 
   export const enum TaskStatus {
-    TERMINATED = 'terminated',
-    PROGRESS = 'progress',
-    WAITING = 'waiting',
+    TERMINATED = 'TERMINATED',
+    PROGRESS = 'PROGRESS',
+    WAITING = 'WAITING',
   }
 
   export interface Log {
@@ -82,5 +82,12 @@ export namespace Task {
   // Task 실행시, log에 관한 Context
   export interface ITaskLogContext {
     recentLogs: Log[][];
+  }
+
+  export function toEnumValue<T>(enumObj: T, value: string): T[keyof T] | undefined {
+    if (Object.values(enumObj).includes(value)) {
+      return value as T[keyof T];
+    }
+    return undefined;
   }
 }
