@@ -61,12 +61,12 @@ export class ServiceAService {
       const promiseInfo = [];
       for (const chainChunk of _.chunk(chains, 20)) {
         const chunkInfos = await Promise.all(
-          chainChunk.map(async (chain) => {
-            const chainInfo = await this.doSomething2(chain);
+          chainChunk.map(async (chain: string) => {
+            const chainInfo = await this.doSomethingA2(chain);
 
             if (chainInfo) {
               try {
-                await this.doSomething(chainInfo);
+                await this.doSomethingA(chainInfo);
               } catch (e) {
                 this.taskHelper().error(e);
               }
@@ -84,7 +84,7 @@ export class ServiceAService {
   }
 
   // 무언가를 하는 dummy function, 약 1,2초 걸림.
-  private async doSomething(chainInfo: any) {
+  private async doSomethingA(chainInfo: any) {
     try {
       // const tempfilePath = path.join(__dirname, tempfilename);
       // const data = JSON.stringify(chainInfo);
@@ -99,7 +99,7 @@ export class ServiceAService {
   }
 
   // 무언가를 하는 dummy function, 약 1,2초 걸림. 1/10 확률로 price가 null임.
-  private async doSomething2(chain: string) {
+  private async doSomethingA2(chain: string) {
     // const rn = Math.random();
     await delay(grn(1, 2));
     if (Math.random() < 1 / 10) {

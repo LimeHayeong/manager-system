@@ -34,9 +34,9 @@ export class ServiceCHelper {
     }
     
     private async processHelper() {
-        this.taskHelper().start();
+        await this.taskHelper().start();
         await this.helpSomething();
-        this.taskHelper().end();
+        await this.taskHelper().end();
     }
 
     // 무언가가 40초에서 80초까지 걸리고, 중간중간 진행율을 보여줌.

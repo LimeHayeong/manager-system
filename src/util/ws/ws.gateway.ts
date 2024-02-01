@@ -6,7 +6,7 @@ import { WebSocketResponse } from '../types/ws';
 import { WsService } from './ws.service';
 import { v4 as uuid } from 'uuid';
 
-@WebSocketGateway(3031, { namespace: 'ws', cors: { origin: '*'} })
+@WebSocketGateway(3030, { namespace: 'ws', cors: { origin: '*'} })
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
   @WebSocketServer()
   private server: Server;

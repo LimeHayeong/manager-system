@@ -82,14 +82,14 @@ export class ServiceBService {
         await this.taskHelper().start();
 
         await Promise.all(chains.map(async (chain) => {
-            const chainMarketData = await this.searchSomething(chain);
+            const chainMarketData = await this.doSomethingB(chain);
             return chainMarketData
         }))
 
         await this.taskHelper().end();
     }
 
-    private async searchSomething(chain: string) {
+    private async doSomethingB(chain: string) {
         await delay(genereateRandomNumber(3, 5));
         if (Math.random() < 1 / 20) {
             this.taskHelper().warn(`[MARKET] ${chain} is not available`)

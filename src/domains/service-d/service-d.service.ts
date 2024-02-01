@@ -50,51 +50,57 @@ export class ServiceDService {
     // 10000개하니까 나가리됨. 3566개쯤에서.
     // 2000개 recentLogs 에러남.
     private async processRun() {
-        this.taskHelper().start();
+        // ... start는 await해야되는 작업인데 안했음.
+        await this.taskHelper().start();
 
         // 10,000개의 항목을 생성 (예시)
-        const chains = Array.from({ length: 10000 }, (_, i) => `Chain_${i + 1}`);
+        const chains = Array.from({ length: 5000 }, (_, i) => `Chain_${i + 1}`);
 
-        for (const chainChunk of _.chunk(chains, 20)) {
+        for (const chainChunk of _.chunk(chains, 50)) {
             const chunkResults = await Promise.all(
               chainChunk.map(async (chain: string) => {
                 try {
-                  const chainInfo = await this.doSomething2(chain);
+                  const chainInfo = await this.doSomethingD2(chain);
                   if (chainInfo) {
-                    await this.doSomething(chainInfo);
+                    await this.doSomethingD(chainInfo);
                   }
                   return chainInfo;
                 } catch (e) {
-                  await this.taskHelper().error(e);
+                  this.taskHelper().error(e);
                   return null;
                 }
               }),
             );
         }
 
-        this.taskHelper().end();
+        await this.taskHelper().end();
     }
 
-    private async doSomething(chainInfo: any) {
+    private async doSomethingD(chainInfo: any) {
         try {
-            await this.taskHelper().log(`[${chainInfo.chainName}] okay`);
+            this.taskHelper().log(`[${chainInfo.chainName}] okay`);
         } catch (e) {
-            await this.taskHelper().error(e);
+            this.taskHelper().error(e);
         }
     }
 
-    private async doSomething2(chain: string) {
-        const randomNumber = Math.random()
-        if (randomNumber < 1 / 10) {
-            // 10% 확률로 warn 발생
-            await this.taskHelper().warn(`[${chain}] is not available`);
-            return { chainName: chain, price: null };
-        } else if(1 / 10 <= randomNumber && randomNumber <= 3 / 20) {
-            // 5% 확률로 에러 발생
-            throw new Error(`[${chain}] error occured`);
-        }{
-            return { chainName: chain, price: Math.floor(Math.random() * 100) + 1 };
+    private async doSomethingD2(chain: string) {
+        try {
+            const randomNumber = Math.random()
+            if (randomNumber < 1 / 10) {
+                // 10% 확률로 warn 발생
+                this.taskHelper().warn(`[${chain}] is not available`);
+                return { chainName: chain, price: null };
+            } else if(1 / 10 <= randomNumber && randomNumber <= 3 / 20) {
+                // 5% 확률로 에러 발생
+                throw new Error(`[${chain}] error occured`);
+            }{
+                return { chainName: chain, price: Math.floor(Math.random() * 100) + 1 };
+            }
+        } catch(e) {
+            this.taskHelper().error(e)
         }
+
     }
 
     private taskHelper(): TaskHelper {

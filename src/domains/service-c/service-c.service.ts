@@ -34,11 +34,11 @@ export class ServiceCService {
     
     // 5초에서 40초 걸리는 작업을 가정.
     private async processRun() {
-        this.taskHelper().start();
+        await this.taskHelper().start();
         
         await delay(genereateRandomNumber(5, 40));
 
-        this.taskHelper().end();
+        await this.taskHelper().end();
     }
 
     private taskHelper(): TaskHelper {

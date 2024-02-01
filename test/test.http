@@ -1,5 +1,9 @@
 @URL = 127.0.0.1
 @PORT = 3001
+### hi
+
+### 현재 manager 상태 가져오기 with logs
+GET http://{{URL}}:{{PORT}}/manager/taskStates HTTP/1.1
 
 ### 현재 manager 상태 가져오기
 GET http://{{URL}}:{{PORT}}/manager/taskStatesNoLogs HTTP/1.1

@@ -2,6 +2,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import { Injectable } from '@nestjs/common';
 import { Task } from '../types/task';
+import { TaskResultDto } from './dto/task-result.dto'
 
 // Q. 같은 domain, task인데 다른 실행방법을 가지면 다르게 Log를 저장해야하나?? >> 생각해봐야함.
 // A. 일단은 다르게 저장, 왜? 실행 context가 다름.
@@ -200,10 +201,7 @@ export class ManagerService {
 
     // Task 시작, task identifier로 해당 taskIdx 찾아서 상태 update.
     // Log는 별도로 찍힘.
-    public async startTask(taskId: Task.ITaskIdentity, contextId: string): Promise<{
-        taskState: Task.TaskState,
-        taskIndex: number
-    }> {
+    public startTask(taskId: Task.ITaskIdentity, contextId: string): TaskResultDto{
         const taskIdx = this.findTask(taskId);
         if(taskIdx !== -1){
             // 실행 context에 관한 건 intialization시 초기화 됨.
@@ -214,6 +212,18 @@ export class ManagerService {
             existingTask.startAt = dateNow
             existingTask.updatedAt = dateNow
             existingTask.endAt = null;
+
+            // 기존에 이 초기화 관련 작업을 Log 찍는 타이밍에 동시에 수행해서 병렬 수행시 문제가 됐었다.
+            // 최근 Log 3개만 유지
+            // 로그 시작시 새 로그 배열 추가
+            // recentLogs 배열 길이 확인 및 오래된 로그 제거
+            if (existingTask.recentLogs.length >= this.maxRecentLogs) {
+                existingTask.recentLogs.shift();
+            }
+            // 새 로그 배열 추가
+            existingTask.recentLogs.push([]);
+
+
             const { recentLogs, ...remains } = existingTask;
             // wsGateway에 전달
             const eventData = this.taskStatesNoLogs();
@@ -231,7 +241,7 @@ export class ManagerService {
 
     // Task 종료, contextId로 taskIdx 찾아서 상태 update.
     // Log는 별도로 찍힘.
-    public async endTask(taskIndex: number): Promise<Task.TaskState> {
+    public endTask(taskIndex: number): Task.TaskState {
         // TODO?: Index 유효성 검사?
 
         const dateNow = Date.now();
@@ -263,23 +273,9 @@ export class ManagerService {
         // console.log(taskIndex);
         const taskState = this.taskStates[taskIndex];
 
-        // 최근 Log 3개만 유지
-        // 로그 시작시 새 로그 배열 추가
-        if (log.logTiming === Task.LogTiming.START) {
-            // recentLogs 배열 길이 확인 및 오래된 로그 제거
-            if (taskState.recentLogs.length >= this.maxRecentLogs) {
-                taskState.recentLogs.shift();
-            }
-            // 새 로그 배열 추가
-            taskState.recentLogs.push([]);
-        }
-
         // 로그 추가 (가장 최근 로그 배열에 로그 추가)
-        
         const currentLogArray = taskState.recentLogs[taskState.recentLogs.length - 1];
-        // console. 추가하니까 갑자기 뻑이 안남.
-        console.log(currentLogArray)
-        currentLogArray.push(log);
+        currentLogArray.push(log)
 
         // taskState 업데이트
         if(log.logTiming !== Task.LogTiming.START && log.logTiming !== Task.LogTiming.END){
