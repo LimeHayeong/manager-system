@@ -66,7 +66,7 @@ export class TaskHelper {
 
   public async log(msg: string) {
     const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.PROCESS, msg, Date.now())
-    this.logTransfer(newLog);
+    this.logTransferNoConsole(newLog);
   }
 
   public async error(error: Error) {
@@ -115,8 +115,11 @@ export class TaskHelper {
   // console, manager(ws), file에 각각 로그를 전달하는 함수.
   private async logTransfer(log: Task.Log){
     this.managerService.logTask(this.taskIndex, log)
-    console.log(`[${log.domain}:${log.task}][${log.level}][${log.logTiming}] ` + log.data);
-    // console 찍는 것도 몰아서 하는 게 좋을 듯?
+    this.fileLoggerService.pushLog(log);
+  }
+
+  private async logTransferNoConsole(log: Task.Log){
+    this.managerService.logTask(this.taskIndex, log)
     this.fileLoggerService.pushLog(log);
   }
 }

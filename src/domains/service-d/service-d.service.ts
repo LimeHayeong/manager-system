@@ -40,15 +40,14 @@ export class ServiceDService {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
                 this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-                await this.processRun();
+                this.processRun();
             } catch (e) {
                 console.error(e);
             }
         })
     }
 
-    // 10000개하니까 나가리됨. 3566개쯤에서.
-    // 2000개 recentLogs 에러남.
+
     private async processRun() {
         // ... start는 await해야되는 작업인데 안했음.
         await this.taskHelper().start();
@@ -56,6 +55,7 @@ export class ServiceDService {
         // 10,000개의 항목을 생성 (예시)
         const chains = Array.from({ length: 5000 }, (_, i) => `Chain_${i + 1}`);
 
+        // 단일 Promise.all은 부하가 심함.
         for (const chainChunk of _.chunk(chains, 50)) {
             const chunkResults = await Promise.all(
               chainChunk.map(async (chain: string) => {
@@ -72,6 +72,17 @@ export class ServiceDService {
               }),
             );
         }
+
+        // for (const chain of chains) {
+        //     try {
+        //         const chainInfo = await this.doSomethingD2(chain);
+        //         if (chainInfo) {
+        //             await this.doSomethingD(chainInfo);
+        //         }
+        //     } catch (e) {
+        //         this.taskHelper().error(e);
+        //     }
+        // }
 
         await this.taskHelper().end();
     }
