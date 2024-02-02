@@ -7,7 +7,7 @@ export class ServiceBController {
     constructor(private readonly serviceBService: ServiceBService) {}
 
     @OnEvent('startTask:ServiceB:processRun:TRIGGER')
-    handleStartTask(){
+    async handleStartTask(){
         this.serviceBService.processTrigger();
     }
 }
