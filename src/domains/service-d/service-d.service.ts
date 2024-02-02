@@ -53,10 +53,13 @@ export class ServiceDService {
         await this.taskHelper().start();
 
         // 10,000개의 항목을 생성 (예시)
-        const chains = Array.from({ length: 5000 }, (_, i) => `Chain_${i + 1}`);
+        const chains = Array.from({ length: 10000 }, (_, i) => `Chain_${i + 1}`);
 
         // 단일 Promise.all은 부하가 심함.
         for (const chainChunk of _.chunk(chains, 50)) {
+            // 이벤트 루프의 다음 틱에 예약..?
+            await new Promise(resolve => setImmediate(resolve));
+
             const chunkResults = await Promise.all(
               chainChunk.map(async (chain: string) => {
                 try {

@@ -30,8 +30,14 @@ export namespace Task {
     contextId: { [key: string]: string };
     level: LogLevel;
     logTiming: LogTiming;
-    data: string | Error | object;
+    data: string | ErrorObject;
     timestamp: number; // toISOString
+  }
+
+  export class ErrorObject {
+    name: string;
+    message: string;
+    stack: string;
   }
 
   export interface WorkState {

@@ -60,6 +60,8 @@ export class ServiceAService {
 
       const promiseInfo = [];
       for (const chainChunk of _.chunk(chains, 20)) {
+        await new Promise(resolve => setImmediate(resolve));
+
         const chunkInfos = await Promise.all(
           chainChunk.map(async (chain: string) => {
             const chainInfo = await this.doSomethingA2(chain);

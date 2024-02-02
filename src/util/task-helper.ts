@@ -70,7 +70,13 @@ export class TaskHelper {
   }
 
   public async error(error: Error) {
-    const newLog = this.makeLog(Task.LogLevel.ERROR, Task.LogTiming.PROCESS, error, Date.now())
+    // Error to object.
+    const data: Task.ErrorObject = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    }
+    const newLog = this.makeLog(Task.LogLevel.ERROR, Task.LogTiming.PROCESS, data, Date.now())
     this.logTransfer(newLog);
   }
 
@@ -92,13 +98,6 @@ export class TaskHelper {
 
   // 정보를 Log로 formatting하는 함수.
   private makeLog(level: Task.LogLevel, timing: Task.LogTiming, data: any, timestamp: number): Task.Log {
-    if(data instanceof Error){
-      data = {
-        name: data.name,
-        message: data.message,
-        stack: data.stack
-      }
-    }
     return {
         domain: this.taskState.domain,
         task: this.taskState.task,
@@ -113,8 +112,9 @@ export class TaskHelper {
 
   // Log Transfer.
   // console, manager(ws), file에 각각 로그를 전달하는 함수.
-  private async logTransfer(log: Task.Log){
+  private async logTransfer(log: Task.Log){ 
     this.managerService.logTask(this.taskIndex, log)
+    this.fileLoggerService.pushConsole(log);
     this.fileLoggerService.pushLog(log);
   }
 
