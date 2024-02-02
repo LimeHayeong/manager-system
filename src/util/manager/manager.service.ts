@@ -1,6 +1,7 @@
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import { Injectable } from '@nestjs/common';
+import { NewTaskLogRequestDTO } from '../ws/dto/new-task-log.dto';
 import { Task } from '../types/task';
 import { TaskResultDto } from './dto/task-result.dto'
 
@@ -17,7 +18,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: [],
+        recentLogs: [[]],
     },
     {
         domain: 'ServiceA',
@@ -29,7 +30,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: []
+        recentLogs: [[]]
     },
     {
         domain: 'ServiceB',
@@ -41,7 +42,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: []
+        recentLogs: [[]]
     },
     {
         domain: 'ServiceB',
@@ -53,7 +54,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: []
+        recentLogs: [[]]
     },
     {
         domain: 'ServiceC',
@@ -65,7 +66,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: []
+        recentLogs: [[]]
     },
     // {
     //     domain: 'ServiceC',
@@ -77,7 +78,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
     //     updatedAt: null,
     //     startAt: null,
     //     endAt: null,
-    //     recentLogs: []
+    //     recentLogs: [[]]
     // },
     {
         domain: 'ServiceC',
@@ -89,7 +90,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: []
+        recentLogs: [[]]
     },
     {
         domain: 'ServiceD',
@@ -101,7 +102,7 @@ const newTasks: Task.TaskStatewithLogs[] = [
         updatedAt: null,
         startAt: null,
         endAt: null,
-        recentLogs: []
+        recentLogs: [[]]
     },
 ]
 
@@ -221,8 +222,8 @@ export class ManagerService {
                 existingTask.recentLogs.shift();
             }
             // 새 로그 배열 추가
-            existingTask.recentLogs.push([]);
-
+            if(existingTask.recentLogs.length !== 1)
+                existingTask.recentLogs.push([]);
 
             const { recentLogs, ...remains } = existingTask;
             // wsGateway에 전달
@@ -282,16 +283,13 @@ export class ManagerService {
             // 시작과 끝이 아닌 경우,
             taskState.updatedAt = log.timestamp;
         }
-        // wsGateway
-        const eventData = this.taskStates;
-        this.eventEmitter.emit(
-            'taskLog',
-            eventData,
-        )
-    }
-
-    public updateTask() {
         
+        // (deprecated) wsGateway에 전달
+        // const eventData = this.taskStates;
+        // this.eventEmitter.emit(
+        //     'taskLog',
+        //     eventData,
+        // )
     }
 
     // initial 당시 (domain, task, taskType) 쌍으로 task 찾아주는 helper function
@@ -353,11 +351,71 @@ export class ManagerService {
     
     // 내부 event
     @OnEvent('getInitialTaskStates')
-    handleGetInitialTaskStates() {
+    async handleGetInitialTaskStates() {
         const data = this.taskStatesNoLogs();
         this.eventEmitter.emit(
             'initailTaskStatesResponse',
             data
+        )
+    }
+
+    // 내부 event
+    @OnEvent('reloadTaskLog')
+    handleReloadTaskLog(data: Task.ITaskIdentity) {
+        console.log(data);
+        let eventData;
+        const TaskIdx = this.findTask(data);
+        if(TaskIdx === -1){
+            // 찾는 task가 없으면,
+            eventData = undefined;
+        }else{
+            // 찾는 Task가 있으면
+            const taskState = this.taskStates[TaskIdx];
+            const lastLogSeq = taskState.recentLogs[taskState.recentLogs.length - 1].length;
+            eventData = {
+                ...taskState,
+                lastLogSeq
+            }
+        }
+        this.eventEmitter.emit(
+            'reloadTaskLogResponse',
+            eventData
+        )
+    }
+
+    // 내부 event
+    // Q. Task 구별자로 할 경우, 요청 꼬이면 이상하게 동작할 수 있긴 한데...
+    @OnEvent('newTaskLog')
+    async handleNewTaskLog(data: NewTaskLogRequestDTO) {
+        let eventData;
+        const { domain, task, taskType, startLogSeq } = data;
+        const TaskIdx = this.findTask({ domain, task, taskType });
+        if(TaskIdx === -1){
+            // 찾는 task가 없으면,
+            console.log('Task not found');
+            eventData = undefined;
+        }else{
+            const taskState = this.taskStates[TaskIdx];
+            const recentLogsIdx = taskState.recentLogs.length - 1;
+            const lastLogSeq = taskState.recentLogs[recentLogsIdx].length;
+            if(startLogSeq > lastLogSeq){
+                console.log('Log not found')
+                // 요청 Log가 현재 로그보다 크면, context가 꼬인건데...?
+                eventData = undefined;
+            }else{
+                const logs = taskState.recentLogs[recentLogsIdx].slice(startLogSeq, lastLogSeq);
+
+                const { recentLogs, ...onlyTaskState } = taskState;
+                eventData = {
+                    ...onlyTaskState,
+                    lastLogSeq,
+                    reqLogs: logs
+                }
+            }
+        }
+        this.eventEmitter.emit(
+            'newTaskLogResponse',
+            eventData
         )
     }
 }

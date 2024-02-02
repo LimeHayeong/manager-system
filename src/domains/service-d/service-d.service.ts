@@ -92,6 +92,7 @@ export class ServiceDService {
 
     private async doSomethingD(chainInfo: any) {
         try {
+            await delay(genereateRandomNumber(0.1, 0.15))
             this.taskHelper().log(`[${chainInfo.chainName}] okay`);
         } catch (e) {
             this.taskHelper().error(e);
@@ -101,12 +102,14 @@ export class ServiceDService {
     private async doSomethingD2(chain: string) {
         try {
             const randomNumber = Math.random()
-            if (randomNumber < 1 / 10) {
-                // 10% 확률로 warn 발생
+            if (randomNumber < 1 / 100) {
+                // 1% 확률로 warn 발생
+                await delay(genereateRandomNumber(0.2, 0.25))
                 this.taskHelper().warn(`[${chain}] is not available`);
                 return { chainName: chain, price: null };
-            } else if(1 / 10 <= randomNumber && randomNumber <= 3 / 20) {
-                // 5% 확률로 에러 발생
+            } else if(1 / 100 <= randomNumber && randomNumber <= 3 / 200) {
+                // 0.5% 확률로 에러 발생
+                await delay(genereateRandomNumber(0.5, 0.7))
                 throw new Error(`[${chain}] error occured`);
             }{
                 return { chainName: chain, price: Math.floor(Math.random() * 100) + 1 };

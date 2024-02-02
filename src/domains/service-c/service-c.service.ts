@@ -25,7 +25,7 @@ export class ServiceCService {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
                 this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-                await this.processRun();
+                this.processRun();
             } catch (e) {
                 console.error(e);
             }

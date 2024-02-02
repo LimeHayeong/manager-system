@@ -10,11 +10,11 @@ export class ServiceCController {
 
     @OnEvent('startTask:ServiceC:processRun:TRIGGER')
     async handleStartTask(){
-        await this.serviceCService.processTrigger();
+        this.serviceCService.processTrigger();
     }
 
     @OnEvent('startTask:ServiceC:processHelper:TRIGGER')
     async handleStartHelperTask(){
-        await this.serviceCHelper.processTrigger();
+        this.serviceCHelper.processTrigger();
     }
 }

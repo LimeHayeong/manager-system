@@ -1,5 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable } from '@nestjs/common';
+import { Task } from '../types/task';
 
 @Injectable()
 export class WsService {
@@ -11,5 +12,13 @@ export class WsService {
 
     public getInitial() {
         this.eventEmitter.emit('getInitialTaskStates');
+    }
+
+    public async reloadTaskLog(data: Task.ITaskIdentity) {
+        this.eventEmitter.emit('reloadTaskLog', data);
+    }
+
+    public async newTaskLog(data: Task.ITaskIdentity) {
+        this.eventEmitter.emit('newTaskLog', data);
     }
 }

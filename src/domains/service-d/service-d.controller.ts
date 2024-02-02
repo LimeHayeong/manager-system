@@ -7,7 +7,7 @@ export class ServiceDController {
     constructor(private readonly serviceDService: ServiceDService) {}
 
     @OnEvent('startTask:ServiceD:processRun:TRIGGER')
-    handleStartTask(){
+    async handleStartTask(){
         this.serviceDService.processTrigger();
     }
 }

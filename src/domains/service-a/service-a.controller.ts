@@ -1,5 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
-
+import { Controller } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ServiceAService } from './service-a.service';
 
@@ -9,6 +8,6 @@ export class ServiceAController {
 
   @OnEvent('startTask:ServiceA:processRun:TRIGGER')
   async handleStartTask(){
-    await this.serviceAService.processTrigger();
+    this.serviceAService.processTrigger();
   }
 }
