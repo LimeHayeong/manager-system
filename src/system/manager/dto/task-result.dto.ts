@@ -1,4 +1,4 @@
-import { Task } from '../../types/task';
+import { Task } from '../../../util/types/task';
 
 export interface TaskResultDto {
     taskState: Task.TaskState;

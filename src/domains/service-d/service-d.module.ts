@@ -1,9 +1,9 @@
 import { ClsModule } from 'nestjs-cls';
-import { FileLoggerModule } from 'src/util/file-logger/logger.module';
-import { ManagerModule } from 'src/util/manager/manager.module';
+import { FileLoggerModule } from 'src/system/file-logger/logger.module';
+import { ManagerModule } from 'src/system/manager/manager.module';
 import { Module } from '@nestjs/common';
-import { ServiceDService } from './service-d.service';
 import { ServiceDController } from './service-d.controller';
+import { ServiceDService } from './service-d.service';
 
 @Module({
   imports: [ClsModule, FileLoggerModule, ManagerModule],

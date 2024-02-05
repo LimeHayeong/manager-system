@@ -1,5 +1,5 @@
-import { FileLoggerService } from './file-logger/logger.service';
-import { ManagerService } from './manager/manager.service';
+import { FileLoggerService } from '../system/file-logger/logger.service';
+import { ManagerService } from '../system/manager/manager.service';
 import { Task } from './types/task';
 import { v4 as uuid } from 'uuid';
 
@@ -86,14 +86,15 @@ export class TaskHelper {
   }
 
   public async end() {
-    const newState = this.managerService.endTask(this.taskIndex)
-    if(newState){
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', newState.endAt)
-      this.logTransfer(newLog)
-    }else{
-      // TODO: 문제가 있으면,
-      
-    }
+      const newState = this.managerService.endTask(this.taskIndex)
+      if(newState){
+        const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', newState.endAt)
+        this.logTransfer(newLog)
+      }else{
+        // TODO: 문제가 있으면,
+        
+      }
+
   }
 
   // 정보를 Log로 formatting하는 함수.

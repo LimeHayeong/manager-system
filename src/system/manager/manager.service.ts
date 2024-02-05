@@ -1,9 +1,10 @@
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { HttpException, Injectable } from '@nestjs/common';
 
-import { Injectable } from '@nestjs/common';
 import { NewTaskLogRequestDTO } from '../ws/dto/new-task-log.dto';
-import { Task } from '../types/task';
+import { Task } from '../../util/types/task';
 import { TaskResultDto } from './dto/task-result.dto'
+import { createApiError } from 'src/util/api-error';
 
 // Q. 같은 domain, task인데 다른 실행방법을 가지면 다르게 Log를 저장해야하나?? >> 생각해봐야함.
 // A. 일단은 다르게 저장, 왜? 실행 context가 다름.
@@ -141,11 +142,14 @@ export class ManagerService {
     }
 
     // HTTP call을 받아 Task 시작.
-    public controlStartTask(taskIdentifier: Task.ITaskIdentity): boolean {
+    public controlStartTask(taskIdentifier: Task.ITaskIdentity) {
         const taskIdx = this.findTask(taskIdentifier)
         if(this.taskStates[taskIdx].status === Task.TaskStatus.PROGRESS){
-            // task가 실행중이면 false
-            return false;
+            // task가 실행중이면 Exception
+            throw new HttpException(
+                createApiError(`${taskIdentifier.domain}:${taskIdentifier.task}:${taskIdentifier.taskType}가 이미 실행중입니다.`, 'Conflict'),
+                409
+            )
         }
         
         // task 활성화
@@ -155,16 +159,17 @@ export class ManagerService {
         if(this.taskStates[taskIdx].taskType === Task.TaskType.TRIGGER){
             this.eventEmitter.emit(`startTask:${taskIdentifier.domain}:${taskIdentifier.task}:${taskIdentifier.taskType}`);
         }
-
-        return true
     }
 
     // HTTP call을 받아 Task 종료.
-    public controlStopTask(taskIdentifier: Task.ITaskIdentity): boolean {
+    public controlStopTask(taskIdentifier: Task.ITaskIdentity) {
         const taskIdx = this.findTask(taskIdentifier)
         if(this.taskStates[taskIdx].status === Task.TaskStatus.TERMINATED){
-            // task가 종료되었으면 false
-            return false;
+            // task가 종료되었으면 Exception
+            throw new HttpException(
+                createApiError(`${taskIdentifier.domain}:${taskIdentifier.task}:${taskIdentifier.taskType}가 이미 종료되었습니다.(terminated)`, 'Conflict'),
+                409
+            )
         }
 
         // 이번까지만 실행됨.
@@ -174,8 +179,6 @@ export class ManagerService {
         if(this.taskStates[taskIdx].taskType === Task.TaskType.CRON && this.taskStates[taskIdx].status === Task.TaskStatus.WAITING) {
             this.taskStates[taskIdx].status = Task.TaskStatus.TERMINATED;
         }
-
-        return true
     }
 
     // task build시, 해당 task가 활성화 되어있는지 확인
@@ -222,8 +225,10 @@ export class ManagerService {
                 existingTask.recentLogs.shift();
             }
             // 새 로그 배열 추가
-            if(existingTask.recentLogs.length !== 1)
-                existingTask.recentLogs.push([]);
+            if(existingTask.startAt === null && existingTask.endAt === null){
+                // 처음 시작하는 경우
+            }
+            existingTask.recentLogs.push([]);
 
             const { recentLogs, ...remains } = existingTask;
             // wsGateway에 전달

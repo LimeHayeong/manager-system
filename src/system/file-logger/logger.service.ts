@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { Injectable } from '@nestjs/common';
-import { Task } from '../types/task';
+import { Task } from '../../util/types/task';
 
 const tempBufferSize = 500;
 const fileInterval = 5000;

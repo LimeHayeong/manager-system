@@ -1,7 +1,7 @@
 import { ClsService } from 'nestjs-cls';
-import { FileLoggerService } from 'src/util/file-logger/logger.service';
+import { FileLoggerService } from 'src/system/file-logger/logger.service';
 import { Injectable } from '@nestjs/common';
-import { ManagerService } from 'src/util/manager/manager.service';
+import { ManagerService } from 'src/system/manager/manager.service';
 import { Task } from 'src/util/types/task';
 import { TaskHelper } from 'src/util/task-helper';
 import { delay } from 'src/util/delay';
@@ -26,7 +26,7 @@ export class ServiceCHelper {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
                 this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-                this.processHelper();
+                await this.processHelper();
             } catch (e) {
                 console.error(e);
             }

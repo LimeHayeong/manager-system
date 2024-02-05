@@ -1,14 +1,17 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
-import { WebSocketError, WebSocketResponse } from '../types/ws';
+import { WebSocketError, WebSocketResponse } from '../../util/types/ws';
 
 import { NewTaskLogRequestDTO } from './dto/new-task-log.dto';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Task } from '../types/task';
+import { SocketExceptionFilter } from '../../util/filter/socket.exception.filter';
+import { Task } from '../../util/types/task';
+import { UseFilters } from '@nestjs/common';
 import { WsService } from './ws.service';
 import { v4 as uuid } from 'uuid';
 
-@WebSocketGateway(3031, { namespace: 'ws', cors: { origin: '*'} })
+@UseFilters(SocketExceptionFilter)
+@WebSocketGateway(3030, { namespace: 'ws', cors: { origin: '*'} })
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
   @WebSocketServer()
   private server: Server;
@@ -43,7 +46,6 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
   @SubscribeMessage('reloadTaskLog')
   handleReloadTaskLog(client: Socket, data: Task.ITaskIdentity){
-    console.log('reloadTaskLog', data);
     this.wsService.reloadTaskLog(data);
   }
 

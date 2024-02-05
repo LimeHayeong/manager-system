@@ -1,6 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable } from '@nestjs/common';
-import { Task } from '../types/task';
+import { Task } from '../../util/types/task';
 
 @Injectable()
 export class WsService {
