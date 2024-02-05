@@ -40,7 +40,7 @@ export class ServiceDService {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
                 this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-                this.processRun();
+                await this.processRun();
             } catch (e) {
                 console.error(e);
             }

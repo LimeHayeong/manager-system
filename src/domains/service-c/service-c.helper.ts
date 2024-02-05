@@ -26,7 +26,7 @@ export class ServiceCHelper {
             try {
                 this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
                 this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-                this.processHelper();
+                await this.processHelper();
             } catch (e) {
                 console.error(e);
             }

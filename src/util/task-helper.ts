@@ -56,7 +56,7 @@ export class TaskHelper {
       // 상태가 제대로 있으면, 상태 반영 제대로 된 것.
       this.taskState = result.taskState;
       this.taskIndex = result.taskIndex;
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.START, '[START]', this.taskState.startAt)
+      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.START, '', this.taskState.startAt)
       this.logTransfer(newLog)
     }else{
       // TODO: 문제가 있으면,
@@ -88,7 +88,7 @@ export class TaskHelper {
   public async end() {
     const newState = this.managerService.endTask(this.taskIndex)
     if(newState){
-      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '[END]', newState.endAt)
+      const newLog = this.makeLog(Task.LogLevel.INFO, Task.LogTiming.END, '', newState.endAt)
       this.logTransfer(newLog)
     }else{
       // TODO: 문제가 있으면,

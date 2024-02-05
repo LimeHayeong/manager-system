@@ -2,7 +2,7 @@ export namespace Task {
   export enum TaskType {
     CRON = 'CRON',
     TRIGGER = 'TRIGGER',
-    WORK = 'WROK',
+    WORK = 'WORK',
   }
 
   export enum LogLevel {
@@ -43,15 +43,14 @@ export namespace Task {
   export interface WorkState {
     // 구별자
     work: string;
-    taskType: TaskType;
-    // 실행 context
+    workType: TaskType;
+    contextId: string;
     status: TaskStatus;
     updatedAt: number;
     startAt: number;
     endAt: number;
-    // Todo: 고민이 필요함.
-    // taskList, log 구분해야되나 ??
-    // taskList: Task[];
+    // 그냥 identifier만 보관하자.
+    taskList: ITaskIdentity[];
   }
 
   // Task 구별자와 실행 context, 최근 log가 담김 >> Manager service 용.

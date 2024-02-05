@@ -6,7 +6,7 @@ import { Task } from '../types/task';
 const tempBufferSize = 500;
 const fileInterval = 5000;
 const consoleInterval = 1000;
-const tempfilename = 'log.json'
+const tempfilename = 'log2.json'
 
 // 아 맞다 setInterval이 실제로 의도한 것처럼 동작 안한다고 했지.... 다른 task 오래 걸리면... 음...
 @Injectable()

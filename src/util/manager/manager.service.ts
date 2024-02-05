@@ -33,6 +33,18 @@ const newTasks: Task.TaskStatewithLogs[] = [
         recentLogs: [[]]
     },
     {
+        domain: 'ServiceA',
+        task: 'processRun',
+        taskType: Task.TaskType.WORK,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: [[]]
+    },
+    {
         domain: 'ServiceB',
         task: 'processRun',
         taskType: Task.TaskType.TRIGGER,
@@ -49,6 +61,18 @@ const newTasks: Task.TaskStatewithLogs[] = [
         task: 'processRun',
         taskType: Task.TaskType.CRON,
         status: Task.TaskStatus.WAITING,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: [[]]
+    },
+    {
+        domain: 'ServiceB',
+        task: 'processRun',
+        taskType: Task.TaskType.WORK,
+        status: Task.TaskStatus.TERMINATED,
         contextId: null,
         isAvailable: true,
         updatedAt: null,
@@ -82,6 +106,18 @@ const newTasks: Task.TaskStatewithLogs[] = [
     // },
     {
         domain: 'ServiceC',
+        task: 'processRun',
+        taskType: Task.TaskType.WORK,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: [[]]
+    },
+    {
+        domain: 'ServiceC',
         task: 'processHelper',
         taskType: Task.TaskType.TRIGGER,
         status: Task.TaskStatus.TERMINATED,
@@ -104,6 +140,52 @@ const newTasks: Task.TaskStatewithLogs[] = [
         endAt: null,
         recentLogs: [[]]
     },
+    {
+        domain: 'ServiceD',
+        task: 'processRun',
+        taskType: Task.TaskType.WORK,
+        status: Task.TaskStatus.TERMINATED,
+        contextId: null,
+        isAvailable: true,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        recentLogs: [[]]
+    }
+]
+
+const newWork: Task.WorkState[] = [
+    {
+        work: 'WorkA',
+        workType: Task.TaskType.WORK,
+        contextId: null,
+        status: Task.TaskStatus.TERMINATED,
+        updatedAt: null,
+        startAt: null,
+        endAt: null,
+        taskList: [
+            {
+                domain: 'ServiceA',
+                task: 'processRun',
+                taskType: Task.TaskType.WORK,
+            },
+            {
+                domain: 'ServiceB',
+                task: 'processRun',
+                taskType: Task.TaskType.WORK,
+            },
+            {
+                domain: 'ServiceC',
+                task: 'processRun',
+                taskType: Task.TaskType.WORK,
+            },
+            {
+                domain: 'ServiceD',
+                task: 'processRun',
+                taskType: Task.TaskType.WORK,
+            }
+        ]
+    }
 ]
 
 const maxLogsNumber = 3;
@@ -111,6 +193,7 @@ const maxLogsNumber = 3;
 @Injectable()
 export class ManagerService {
     private taskStates: Task.TaskStatewithLogs[] = [];
+    private workStates: Task.WorkState[] = [];
     private maxRecentLogs;
 
     constructor(
@@ -124,9 +207,9 @@ export class ManagerService {
     // 사전 정의된 task들 넣어주는 작업. >> initialization.
     private intialization() {
         // TODO: initalization의 경우 과거 Logs는 로그 파일 뒤져서 줘야함.
-        this.taskStates = [];
         this.maxRecentLogs = maxLogsNumber
         newTasks.forEach(newTask => this.taskStates.push(newTask));
+        newWork.forEach(newWork => this.workStates.push(newWork));
         console.log('manager service initialized');
     }
 
@@ -200,6 +283,16 @@ export class ManagerService {
         return false;
     }
 
+    // work build시, 해당 work가 실행중인지 확인
+    // return: true(on Running), false
+    public isWorkRunning(work: string): boolean {
+        const workIndex = this.workStates.findIndex(workState => workState.work === work)
+        if(this.workStates[workIndex].status === Task.TaskStatus.PROGRESS){
+            return true;
+        }
+        return false;
+    }
+
     // Task 시작, task identifier로 해당 taskIdx 찾아서 상태 update.
     // Log는 별도로 찍힘.
     public startTask(taskId: Task.ITaskIdentity, contextId: string): TaskResultDto{
@@ -222,7 +315,7 @@ export class ManagerService {
                 existingTask.recentLogs.shift();
             }
             // 새 로그 배열 추가
-            if(existingTask.recentLogs.length !== 1)
+            if(existingTask.recentLogs.length < this.maxRecentLogs)
                 existingTask.recentLogs.push([]);
 
             const { recentLogs, ...remains } = existingTask;
@@ -349,6 +442,26 @@ export class ManagerService {
         })
     }
     
+    public startWork(contextId: string): Task.WorkState {
+        const dateNow = Date.now();
+        const existingWork = this.workStates.find(work => work.contextId === contextId);
+        existingWork.status = Task.TaskStatus.PROGRESS;
+        existingWork.contextId = contextId;
+        existingWork.startAt = dateNow;
+        existingWork.updatedAt = dateNow;
+        existingWork.endAt = null;
+        return existingWork;
+    }
+
+    public endWork(contextId: string): Task.WorkState {
+        const dateNow = Date.now();
+        const existingWork = this.workStates.find(work => work.contextId === contextId);
+        existingWork.status = Task.TaskStatus.TERMINATED;
+        existingWork.updatedAt = dateNow;
+        existingWork.endAt = dateNow;
+        return existingWork;
+    }
+
     // 내부 event
     @OnEvent('getInitialTaskStates')
     async handleGetInitialTaskStates() {
@@ -362,7 +475,7 @@ export class ManagerService {
     // 내부 event
     @OnEvent('reloadTaskLog')
     handleReloadTaskLog(data: Task.ITaskIdentity) {
-        console.log(data);
+        // console.log(data);
         let eventData;
         const TaskIdx = this.findTask(data);
         if(TaskIdx === -1){
@@ -392,14 +505,14 @@ export class ManagerService {
         const TaskIdx = this.findTask({ domain, task, taskType });
         if(TaskIdx === -1){
             // 찾는 task가 없으면,
-            console.log('Task not found');
+            // console.log('Task not found');
             eventData = undefined;
         }else{
             const taskState = this.taskStates[TaskIdx];
             const recentLogsIdx = taskState.recentLogs.length - 1;
             const lastLogSeq = taskState.recentLogs[recentLogsIdx].length;
             if(startLogSeq > lastLogSeq){
-                console.log('Log not found')
+                // console.log('Log not found')
                 // 요청 Log가 현재 로그보다 크면, context가 꼬인건데...?
                 eventData = undefined;
             }else{
