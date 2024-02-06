@@ -9,11 +9,13 @@ import { ServiceBModule } from './domains/service-b/service-b.module';
 import { ServiceCModule } from './domains/service-c/service-c.module';
 import { ServiceDModule } from './domains/service-d/service-d.module';
 import { WsModule } from './util/ws/ws.module';
+import { ClsModule } from 'nestjs-cls';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
+    ClsModule,
     ServiceAModule, ServiceBModule, ServiceCModule, ServiceDModule, WsModule, ManagerModule, FileLoggerModule],
   controllers: [],
   providers: [AppService],

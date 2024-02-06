@@ -9,5 +9,6 @@ import { ServiceAService } from './service-a.service';
   imports: [ClsModule, FileLoggerModule, ManagerModule],
   providers: [ServiceAService],
   controllers: [ServiceAController],
+  exports: [ServiceAService]
 })
 export class ServiceAModule {}

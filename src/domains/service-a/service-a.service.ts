@@ -33,10 +33,10 @@ export class ServiceAService {
       try {
         this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
         this.taskHelper().build(opts.domain, opts.task, Task.TaskType.TRIGGER);
-        this.processRun();
+        await this.processRun();
       } catch(e) {
         // build level error
-        console.log(e)
+        console.error(e)
       }
     })
   }
@@ -47,10 +47,10 @@ export class ServiceAService {
       try {
         this.clsService.set('TaskHelper', new TaskHelper(this.managerService, this.fileLoggerService))
         this.taskHelper().build(opts.domain, opts.task, Task.TaskType.CRON);
-        this.processRun();
+        await this.processRun();
       } catch (e) {
         // build level error
-        console.log(e.message)
+        console.error(e)
       }
     })
   }

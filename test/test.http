@@ -1,5 +1,5 @@
 @URL = 127.0.0.1
-@PORT = 3001
+@PORT = 3000
 ### hi
 
 ### 현재 manager 상태 가져오기 with logs

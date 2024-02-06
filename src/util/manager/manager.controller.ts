@@ -11,7 +11,6 @@ export class ManagerController {
 
     @Post('/start')
     controlStartTask(@Req() req, @Res() res, @Body() data: Task.ITaskIdentity) {
-        console.log('controlStartTask')
         const success = this.managerService.controlStartTask(data);
         let response: ApiResponse | ApiError;
         if(success){
@@ -32,7 +31,6 @@ export class ManagerController {
 
     @Post('/stop')
     controlStopTask(@Req() req, @Res() res, @Body() data: Task.ITaskIdentity) {
-        console.log('controlStopTask')
         const success = this.managerService.controlStopTask(data);
         let response: ApiResponse | ApiError;
         if(success){
