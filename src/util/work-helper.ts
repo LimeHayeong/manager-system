@@ -3,7 +3,6 @@ import { ManagerService } from "./manager/manager.service";
 import { Task } from "./types/task";
 import { v4 as uuid } from 'uuid';
 
-// TODO: WORK Helper 완성
 export class WorkHelper {
     private workState: Task.WorkState;
     private workIndex: number;
